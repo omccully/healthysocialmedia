@@ -1,0 +1,40 @@
+{
+	"name": "Healthy Social Media",
+	"version": "1.2",
+	"description": "Reduce addictive and neurotic aspects of social media.",
+	"permissions": ["activeTab"],
+	"background": {
+      "scripts": ["background.js"],
+      "persistent": false
+    },
+    "options_page": "options.html",
+
+    "content_scripts": [
+	   {
+	     "matches": ["*://*.reddit.com/*"],
+	     "css": ["reddit.css"],
+	     "js": ["jquery-3.3.1.min.js", "reddit.js"]
+	   },
+	   {
+	   	 "matches": ["*://*.twitter.com/*"],
+	     "js": ["jquery-3.3.1.min.js", "twitter.js"]
+	   }
+	],
+
+    "page_action": {
+      "default_popup": "popup.html",
+      "default_icon": {
+        "16": "images/get_started16.png",
+        "32": "images/get_started32.png",
+        "48": "images/get_started48.png",
+        "128": "images/get_started128.png"
+      }
+    },
+    "icons": {
+      "16": "images/get_started16.png",
+      "32": "images/get_started32.png",
+      "48": "images/get_started48.png",
+      "128": "images/get_started128.png"
+    },
+	"manifest_version": 2
+}
