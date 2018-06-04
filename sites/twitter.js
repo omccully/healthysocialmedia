@@ -32,10 +32,19 @@ function remove_profile_followers(username) {
 
 function remove_statcard_followers() {
 	$(".ProfileCardStats-statLink").each(function(i, stat) {
+		$(stat).attr("data-original-title", "HSM");
+
 		if($(stat).attr("data-element-term") == "follower_stats") {
 			$(stat).find(".ProfileCardStats-statValue").html("HSM");
 		}
 	});
+}
+
+function remove_useless_notifications() {
+	$("li.js-activity-favorite").hide(); //.html("hid favorite");
+	$("li.js-activity-retweet").hide(); //.html("hid retweet");
+	$("li.js-activity-follow").hide(); //.html("hid follow");
+
 }
 
 function modify() {
@@ -46,6 +55,8 @@ function modify() {
 	remove_tweet_stats(username);
 	remove_profile_followers(username);
 	remove_statcard_followers();
+
+	remove_useless_notifications();
 }
 
 

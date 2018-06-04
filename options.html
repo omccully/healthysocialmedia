@@ -1,21 +1,76 @@
  <!DOCTYPE html>
   <html>
     <head>
-      <style>
-        button {
-          height: 30px;
-          width: 30px;
-          outline: none;
-          margin: 10px;
-        }
-      </style>
+    <script src="jquery-3.3.1.min.js"></script>
     </head>
     <body>
-      <div id="buttonDiv">
-      </div>
-      <div>
-        <p>Choose a different background color!</p>
-      </div>
+      <h2>General</h2>
+	  <input id="general_leave_no_trace" type="checkbox" />
+	  <label for="general_leave_no_trace">Leave no trace of the removed content (may cause confusion if you forget the extension is installed)</label>
+	  
+      <h2>Facebook</h2>
+      <h4>Reactions to your posts</h4>
+      <input type="radio" name="facebook_comment_reactions" id="fcl_nomodification" value="nochange" />
+      <label for="fcl_nomodification">No modification</label>
+      &nbsp;
+	  <input type="radio" name="facebook_comment_reactions" id="fcl_nometrics" value="nometrics" />
+	  <label for="fcl_nometrics">Remove metrics</label>
+	  &nbsp;
+	  <input type="radio" name="facebook_comment_reactions" id="fcl_removeentirely" value="removeentirely" default-checked/>
+	  <label for="fcl_removeentirely">Remove entirely</label>
+	  <br/><br/><br/>
+	  <input id="facebook_hide_friend_counts" type="checkbox" default-checked/>
+	  <label for="facebook_hide_friend_counts">Hide your friend counts</label>
+
+      <h2>Reddit</h2>
+      <h4>Upvotes to your posts and comments</h4>
+      <input type="radio" name="reddit_upvotes" id="ru_nomodification" value="nochange" />
+      <label for="ru_nomodification">No modification</label>
+      &nbsp;
+      <input type="radio" name="reddit_upvotes" id="ru_hover" value="hover" />
+      <label for="ru_hover">Hover to see points</label>
+      &nbsp;
+      <input type="radio" name="reddit_upvotes" id="ru_removeentirely" value="removeentirely" default-checked/>
+      <label for="ru_removeentirely">Remove points entirely</label>
+
+      <h2>Twitter</h2>
+      <h4>Follower count</h4>
+      <input type="radio" name="twitter_followers" id="tf_nomodification" value="nochange" />
+      <label for="tf_nomodification">No modification</label>
+      &nbsp;
+      <input type="radio" name="twitter_followers" id="tf_hover" value="hover" default-checked/>
+      <label for="tf_hover">Hover to see follower count</label>
+      &nbsp;
+      <input type="radio" name="twitter_followers" id="tf_removeentirely" value="removeentirely" />
+      <label for="tf_removeentirely">Remove follower count entirely</label>
+      <br/><br/>
+
+      <input id="twitter_hide_tweet_comments" type="checkbox" />
+	  <label for="twitter_hide_tweet_comments">Hide tweet comment counts</label>
+	  <br/>
+	  <input id="twitter_hide_tweet_retweet" type="checkbox" default-checked/>
+	  <label for="twitter_hide_tweet_retweet">Hide tweet retweet counts</label>
+	  <br/>
+      <input id="twitter_hide_tweet_likes" type="checkbox" default-checked/>
+	  <label for="twitter_hide_tweet_likes">Hide tweet like counts</label>
+	  
+	  <br/><br/>
+	  
+	  <input id="twitter_hide_like_notifications" type="checkbox" default-checked/>
+	  <label for="twitter_hide_like_notifications">Hide like notifications</label>
+	  <br/>
+	  <input id="twitter_hide_retweet_notifications" type="checkbox" default-checked/>
+	  <label for="twitter_hide_retweet_notifications">Hide retweet notifications</label>
+	  <br/>
+	  <input id="twitter_hide_follow_notifications" type="checkbox" default-checked/>
+	  <label for="twitter_hide_follow_notifications">Hide follow notifications</label>
+	  
+      <h2>YouTube</h2>
+      <input id="youtube_hide_video_stats" type="checkbox" default-checked/>
+	  <label for="youtube_hide_video_stats">Hide your video stats</label>
+	  
+      <br/><br/>
+      <input type="button" value="Restore defaults" id="restore_defaults_button" />
     </body>
     <script src="options.js"></script>
   </html>

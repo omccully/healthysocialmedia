@@ -3,9 +3,7 @@
 	"version": "1.2",
 	"description": "Reduce addictive and neurotic aspects of social media.",
 	"permissions": ["activeTab", "storage"],
-
-    "options_page": "options.html",
-
+	"options_page": "options.html",
     "content_scripts": [
 	   {
 	     "matches": ["*://*.reddit.com/*"],
