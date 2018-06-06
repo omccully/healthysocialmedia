@@ -8,18 +8,14 @@ function user_span_to_username(user_span) {
 }
 
 function hide_scores_from_user(jquery, username, replacement, allow_hover) {
-	var num = 0;
-	jquery.each(function(i, element) {
-		if($(element).attr("data-author") == username) {
-			var query_result = $(element).find(".score").html(replacement);
+	var query_result = jquery.filter("[data-author='" + $.escapeSelector(username) + "']")
+		.find(".score").html(replacement);
 
-			if(!allow_hover) {
-				query_result.attr("title", replacement);
-			}
+	if(!allow_hover) {
+		query_result.attr("title", replacement);
+	}
 
-			num++;
-		}
-	});
+	return query_result.length;
 }
 
 function hide_post_scores_from_user(username, replacement, allow_hover) {
@@ -34,22 +30,16 @@ function hide_comment_scores_from_user(username, replacement, allow_hover) {
 
 function hide_profile_page_overview_scores(username, replacement, allow_hover) {
 	// remove scores from comments on overview
-	$(".Post__prominentComment").each(function(i, prominent) {
-		var div = $(prominent).find("div").first();
-		var poster = div.find(".Post__username").html();
-		if(poster == username && div.attr("modified") != "true") {
-			//if(allow_hover) {
-			//	div.attr("title", div.text());
-			//}
+	$(".Post__prominentComment > div:first-of-type:not([modified])").each(function() {
+		if($(this).find(".Post__username").text() == username) {
+			$(this).attr("modified", "true");
 
-			div.attr("modified", "true");
-
-			var new_html = div.html().replace(new RegExp('[0-9]+ point[s]*'), 
+			var new_html = $(this).html().replace(new RegExp('[0-9]+ point[s]*'), 
 				(allow_hover ? "<span title=\"$&\">" + replacement + "</span>" : replacement)
 			);
 			if(replacement == "") new_html = new_html.replace("•", "");
 
-			div.html(new_html);
+			$(this).html(new_html);
 		}
 	});
 }
@@ -134,7 +124,7 @@ function hide_bluebar_karma(replacement) {
 function hide_userspan_karma(replacement) {
 	if(replacement == "") {
 		//$(".user").remove(":not(a)");
-		var user_link = $(".user").find("a").first().clone();
+		var user_link = $(".user a").first().clone();
 		$(".user").empty();
 		$(".user").append(user_link);
 
@@ -187,40 +177,4 @@ function modify(settings) {
 	}
 }
 
-
-function DOMModificationHandler(){
-    $(this).unbind('DOMSubtreeModified.event1');
-    setTimeout(function(){
-        chrome.storage.sync.get(null, function(settings) {
-        	modify(settings);
-			$('body').bind('DOMSubtreeModified.event1',
-                                   DOMModificationHandler);
-        });
-
-        
-    },10);
-}
-
-function xinspect(o,i){
-    if(typeof i=='undefined')i='undefined';
-    if(i.length>50)return '[MAX ITERATIONS]';
-    var r=[];
-    for(var p in o){
-        var t=typeof o[p];
-        r.push(i+'"'+p+'" ('+t+') => '+(t=='object' ? 'object:'+xinspect(o[p],i+'  ') : o[p]+''));
-    }
-    return r.join(i+'\n');
-}
-
-
-chrome.storage.sync.get(null, function(settings) {
-	//console.log("settings = " + settings);
-	//console.log("settings.hasOwnProperty = " + settings.hasOwnProperty('general_leave_no_trace'));
-	//console.log(xinspect(settings));
-	modify(settings);
-	$('body').bind('DOMSubtreeModified.event1', DOMModificationHandler);
-});
-
-
-read_storage_and_modify();
-
+initialize_dynamic(modify);

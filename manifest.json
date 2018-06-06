@@ -7,20 +7,20 @@
     "content_scripts": [
 	   {
 	     "matches": ["*://*.reddit.com/*"],
-	     "js": ["jquery-3.3.1.min.js", "sites/reddit.js"],
+	     "js": ["settings_reader.js", "jquery-3.3.1.min.js", "sites/reddit.js"],
 	     "run_at": "document_end"
 	   },
 	   {
 	   	 "matches": ["*://*.twitter.com/*"],
-	     "js": ["jquery-3.3.1.min.js", "sites/twitter.js"]
+	     "js": ["settings_reader.js", "jquery-3.3.1.min.js", "sites/twitter.js"]
 	   },
 	   {
 	   	 "matches": ["*://*.facebook.com/*"],
-	     "js": ["jquery-3.3.1.min.js", "sites/facebook.js"]
+	     "js": ["settings_reader.js", "jquery-3.3.1.min.js", "sites/facebook.js"]
 	   },
 	   {
 	   	 "matches": ["*://*.youtube.com/*"],
-	     "js": ["jquery-3.3.1.min.js", "sites/youtube.js"]
+	     "js": ["settings_reader.js", "jquery-3.3.1.min.js", "sites/youtube.js"]
 	   }
 	],
 

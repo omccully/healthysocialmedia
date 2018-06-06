@@ -12,48 +12,47 @@ function logged_in_account_id() {
 	 return url_to_account_id(href);
 }
 
+function hide_friend_counts(replacement) {
+	// friend counts on profile sidebar
+	$("._2iem").html(replacement);
 
-function modify() {
+	// friend counts on profile tab
+	$("._gs6").html(replacement);
+
+	// friend counts on friends page
+	$("._3d0").html(replacement);
+}
+
+function modify(settings) {
 	var account_id = logged_in_account_id();
 
 	console.log("account_id = " + account_id);
+	var replacement = settings.replacement;
 
 	var reg = new RegExp('facebook\.com/' + account_id);
 	var match = reg.test(window.location.href);
 	if(match) {
 		console.log("on home profile");
-		var others_reg = new RegExp("[0-9]+ others");
-		$("._4arz").each(function(i, liketext) {
-			console.log($(liketext).html());
-			$(liketext).html($(liketext).html().replace(others_reg, "some others"));
-			console.log($(liketext).html());
-			console.log("...");
-		});
 
-		// friend counts on profile sidebar
-		$("._2iem").html("HSM");
+		switch(settings.get("facebook_comment_reactions")) {
+			case "nochange":
 
-		// friend counts on profile tab
-		$("._gs6").html("HSM");
+				break;
+			case "nometrics":
+				var others_reg = new RegExp("[0-9]+ others");
+				$("._4arz").each(function(i, liketext) {
+					$(liketext).html($(liketext).html().replace(others_reg, "some others"));
+				});
+				break;
+			case "removeentirely": 
+				$("._3t53").hide();
+				break;
+		}
 
-		// friend counts on friends page
-		$("._3d0").html("HSM");
+		if(settings.get("facebook_hide_friend_counts")) {
+			hide_friend_counts(replacement);
+		}
 	}
 }
 
-
-function DOMModificationHandler(){
-    $(this).unbind('DOMSubtreeModified.event1');
-    setTimeout(function(){
-        modify();
-        // '#u_0_1r_story'
-        $("body").bind('DOMSubtreeModified.event1',
-                                   DOMModificationHandler);
-    },10);
-}
-
-
-$("body").bind('DOMSubtreeModified.event1', DOMModificationHandler);
-modify();
-
-
+initialize_dynamic(modify);

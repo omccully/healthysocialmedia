@@ -112,19 +112,25 @@ function initialize_settings(settings) {
   $("#restore_defaults_button").click(onclick_restore_defaults);
 }
 
-function xinspect(o,i){
-    if(typeof i=='undefined')i='';
-    if(i.length>50)return '[MAX ITERATIONS]';
-    var r=[];
-    for(var p in o){
-        var t=typeof o[p];
-        r.push(i+'"'+p+'" ('+t+') => '+(t=='object' ? 'object:'+xinspect(o[p],i+'  ') : o[p]+''));
-    }
-    return r.join(i+'\n');
-}
-
-
 chrome.storage.sync.get(null, function(settings) {
-  console.log(xinspect(settings));
+  //console.log(xinspect(settings));
   initialize_settings(settings);
 });
+
+
+
+// GENERATE DEFAULTS:
+/*
+var defaults = {};
+$("input[type='checkbox']").each(function() {
+  defaults[$(this).attr("id")] = $(this).is("[default-checked]");
+});
+
+// TODO: get data structure of all valid values to radios
+// if the value is ever invalid, use the default
+$("input[type='radio'][default-checked]").each(function() {
+  defaults[$(this).attr("name")] = $(this).attr("value");
+});
+
+console.log(JSON.stringify(defaults));
+*/
