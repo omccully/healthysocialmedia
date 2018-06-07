@@ -1,5 +1,28 @@
 console.log("youtube.js exec");
 
+class YouTubeIdentity {
+	constructor(settings) {
+		this.id = get_latest_channel_id(settings);
+		this.display_name = get_latest_channel_name(settings);
+		this.user_name = get_latest_channel_user(settings, this.id);
+
+		console.log("chid = " + this.id + ", cname = " + this.display_name + ", cuser = " + this.user_name);
+	}
+
+	equals_url(url) {
+		return (this.id && url.includes("channel/" + this.id)) || 
+			(this.user_name && url.includes("user/" + this.user_name));
+	}
+
+	equals_display_name(display) {
+		return display.trim() == this.display_name;
+	}
+
+	equals_url_or_display(url, display) {
+		return this.equals_url(url) || this.equals_display_name(display);
+	}
+}
+
 function get_channel_id_from_dom() {
 	var regex = new RegExp('\/channel\/([^?]+)');
 	var channel_id = null;
@@ -26,7 +49,7 @@ function get_latest_channel_id(settings) {
 	var channel_id = get_channel_id_from_dom();
 	if(channel_id != null) {
 		chrome.storage.sync.set({[chid_cache_key]: channel_id}, function() {
-			console.log("Stored " + chid_cache_key + " = " + channel_id);
+			//console.log("Stored " + chid_cache_key + " = " + channel_id);
 		});
 		get_latest_channel_id.latest_channel_id = channel_id;
 		return channel_id;
@@ -36,17 +59,6 @@ function get_latest_channel_id(settings) {
 	var chid = settings.get(chid_cache_key);
 	get_latest_channel_id.latest_channel_id = chid;
 	return chid;
-
-/*
-		chrome.storage.sync.get('cache_youtube_channel_id', function(settings) {
-			if(settings.hasOwnProperty('cache_youtube_channel_id')) {
-				get_latest_channel_id.latest_channel_id = settings['cache_youtube_channel_id'];
-				chid_receiver(settings['cache_youtube_channel_id']);
-			} else {
-				chid_receiver(undefined);
-			}
-		});*/
-
 }
 
 function get_channel_name_from_dom() {
@@ -60,7 +72,7 @@ function get_latest_channel_name(settings) {
 	var channel_name = get_channel_name_from_dom();
 	if(channel_name != null) {
 		chrome.storage.sync.set({[name_cache_key]: channel_name}, function() {
-			console.log("Stored " + name_cache_key + " = " + channel_name);
+			//console.log("Stored " + name_cache_key + " = " + channel_name);
 		});
 		get_latest_channel_name.latest_channel_name = channel_name;
 		return channel_name;
@@ -70,15 +82,6 @@ function get_latest_channel_name(settings) {
 	var cname = settings.get(name_cache_key);
 	get_latest_channel_name.latest_channel_name = cname;
 	return cname;
-		
-		/*chrome.storage.sync.get('cache_youtube_channel_name', function(settings) {
-			if(settings.hasOwnProperty('cache_youtube_channel_name')) {
-				get_latest_channel_name.latest_channel_name = settings['cache_youtube_channel_name'];
-				cname_receiver(settings['cache_youtube_channel_name']);
-			} else {
-				cname_receiver(undefined);
-			}
-		});*/
 }
 
 function get_channel_user_from_dom(channel_id) {
@@ -99,7 +102,7 @@ function get_latest_channel_user(settings, channel_id) {
 	var channel_user = get_channel_user_from_dom(channel_id);
 	if(channel_user != null) {
 		chrome.storage.sync.set({[user_cache_key]: channel_user}, function() {
-			console.log("Stored " + user_cache_key + " = " + channel_user);
+			//console.log("Stored " + user_cache_key + " = " + channel_user);
 		});
 		get_latest_channel_user.latest_channel_user = channel_user;
 		return channel_user;
@@ -112,25 +115,34 @@ function get_latest_channel_user(settings, channel_id) {
 }
 
 
-function is_watch_page() {
-	var reg = new RegExp('youtube\.com\/watch\?');
-	return reg.test(window.location.href);
-}
-
 function is_subscriptions_page() {
 	var reg = new RegExp('youtube\.com\/feed\/subscriptions');
 	return reg.test(window.location.href);
 }
 
 function is_channel_page_by_chid(channel_id) {
-	if(channel_id == null) return false;
-	return window.location.href.includes("/channel/" + channel_id);
+	if(!channel_id) return false;
+	return window.location.href.includes("channel/" + channel_id);
 }
 
-function is_channel_page_by_user(channel_user) {
-	if(channel_user == null) return false;
-	return window.location.href.includes("/user/" + channel_user);
+function is_channel_page(identity) {
+	return identity.equals_url(window.location.href);
 }
+
+function is_watch_page() {
+	var reg = new RegExp('youtube\.com\/watch\?');
+	return reg.test(window.location.href);
+}
+
+function is_my_video_watch_page(identity) {
+	var first = $("a.ytd-video-owner-renderer").first();
+	var href = first.attr("href");
+	var label = first.attr("aria-label");
+	return (href && identity.equals_url(href)) || 
+		(label && identity.display_name && label.includes(identity.display_name));
+}
+
+
 
 function hide_video_stats(replacement) {
 	console.log("replacement = " + replacement);
@@ -155,32 +167,21 @@ function hide_video_stats(replacement) {
 	}
 }
 
-function is_my_video_watch_page() {
-	var first = $("a.ytd-video-owner-renderer").first();
-	var href = first.attr("href");
-	var label = first.attr("aria-label");
-	if(href != null && href.includes(channel_id)) {
-		console.log("Based on chid, this is your video. Hiding video stats...");
-		return true;
-	} else if(label != null && label.includes(channel_name)) {
-		console.log("Based on name, this is your video. Hiding video stats...");
-		return true;
-	}
-	return false;
+function hide_sub_vids() {
+	console.log("hide_sub_vids()");
 }
 
+
+
 function modify(settings) {
-	console.log("modify------~~~~");
+	console.log("modify--------------");
 
 	var replacement = settings.replacement;
-	console.log("replacement = " + replacement);
+	//console.log("replacement = " + replacement);
 
-	var channel_id = get_latest_channel_id(settings);
-	var channel_name = get_latest_channel_name(settings);
-	var channel_user = get_latest_channel_user(settings, channel_id);
+	var identity = new YouTubeIdentity(settings);
 
-	console.log("chid = " + channel_id + ", cname = " + channel_name + ", cuser = " + channel_user);
-
+	
 	if(is_subscriptions_page()) {
 		console.log("subscription page");
 		/*
@@ -188,21 +189,53 @@ function modify(settings) {
 		$(".ytd-grid-video-renderer").each(function(i, vid) {
 
 		});*/
+		/*var buttons = $(".grid-subheader.style-scope.ytd-shelf-renderer #title-container #menu #top-level-buttons:has(button[aria-label='Switch to grid view'])");
+		if(buttons.find("#hide_sub_vids").length == 0) {
+			var button = $("<input />")
+				.attr("id", "hide_sub_vids")
+				.attr("type", "button")
+				.attr("value", "Hide all")
+				.click(function() {
+					hide_sub_vids();
+				});
+			console.log("")
+			buttons.prepend(button);
+		}
+
+		I'll have to do this by finding some other element and searching after that one.
+		*/
 	} else if(is_watch_page()) {
 		console.log("watch page");
-		if(channel_id != null) {
+		if(identity.id) { // we know SOME info about the user at least
 			//console.log("using channel_id = " + channel_id);
 
-			if(settings.get('youtube_hide_video_stats') && is_my_video_watch_page()) {
+			if(settings.get('youtube_hide_video_stats') && is_my_video_watch_page(identity)) {
 				hide_video_stats(replacement);
 			}
+
+			// hide my comment upvotes
+			$("ytd-comment-renderer[id='comment'], ytd-comment-renderer.ytd-comment-replies-renderer").each(function() {
+				var a_author_text = $(this).find("#author-text");
+				var author_url = a_author_text.attr("href");
+				var author_name = a_author_text.text().trim();
+				console.log("comment: " + author_name + " " + author_url);
+				if(identity.equals_url_or_display(author_url, author_name)) {
+					console.log("found a comment of yours");
+					$(this).find("#vote-count-middle").html(replacement);
+				}
+			});
 		} 
-	} else if(is_channel_page_by_chid(channel_id) || is_channel_page_by_user(channel_user)) {
+	} else if(is_channel_page(identity)) {
 		console.log("is your channel");
 		if(settings.get('youtube_hide_video_stats')) {
 			// remove video views on channel
 			$("#metadata-line span:first-child").html(replacement);
 		}
+
+		// hide subscriber count on channel
+		var sub_count = $("#channel-header-container yt-formatted-string#subscriber-count");
+		sub_count.attr("title", sub_count.text());
+		sub_count.html(replacement);
 	}
 }
 
