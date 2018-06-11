@@ -76,6 +76,12 @@ function remove_useless_notifications(settings) {
 	}
 }
 
+function notifications() {
+	var ele = $("li.notifications .new-count .count-inner").first();
+	if(!ele) return 0;
+	return parseInt(ele.text());
+}
+
 function modify(settings) {
 	var username = logged_in_user();
 
@@ -90,5 +96,17 @@ function modify(settings) {
 
 	remove_useless_notifications(settings);
 }
+
+/*
+$.ajax({
+	type: "GET",
+	url: "/i/notifications",
+	success: function(msg) {
+		$(msg).find(".js-activity:not(.highlighted)").each(function(i) {
+			console.log(i + " " + $(this).prop("tagName") + " " + $(this).attr("class"));
+		})
+	}
+});
+*/
 
 initialize_dynamic(modify);

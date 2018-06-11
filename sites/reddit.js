@@ -34,7 +34,7 @@ function hide_profile_page_overview_scores(username, replacement, allow_hover) {
 		if($(this).find(".Post__username").text() == username) {
 			$(this).attr("modified", "true");
 
-			var new_html = $(this).html().replace(new RegExp('[0-9]+ point[s]*'), 
+			var new_html = $(this).html().replace(new RegExp('[\-0-9]+ point[s]*'), 
 				(allow_hover ? "<span title=\"$&\">" + replacement + "</span>" : replacement)
 			);
 			if(replacement == "") new_html = new_html.replace("•", "");
@@ -58,7 +58,7 @@ function hide_profile_page_comment_scores(username, replacement, allow_hover) {
 				metadata.attr("title", metadata.text());
 			}
 
-			metadata.html(metadata.html().replace(new RegExp('[0-9]+ point[s]*'), replacement));
+			metadata.html(metadata.html().replace(new RegExp('[\-0-9]+ point[s]*'), replacement));
 		}
 	});
 }

@@ -18,6 +18,10 @@ class SettingsReader {
 		return this.settings[key];
 	}
 
+	set_val(key, value) {
+		this.settings[key] = value;
+	}
+
 	get replacement() {
 		if(this.get("general_leave_no_trace")) {
 			return "";
@@ -46,8 +50,21 @@ function initialize_dynamic(settings_receiver, monitor=null) {
 			$(this).unbind('DOMSubtreeModified.event1');
     		setTimeout(function() {
     			initialize_dynamic(settings_receiver, monitor);
-    		}, 10);
+    		}, 20);
 		});
+	});
+}
+
+function unbind_dynamic(monitor=null) {
+	$(monitor == null ? document : monitor).unbind('DOMSubtreeModified.event1');
+}
+
+function bind_dynamic(settings_receiver, monitor=null) {
+	$(monitor == null ? document : monitor).bind('DOMSubtreeModified.event1', function() {
+		$(this).unbind('DOMSubtreeModified.event1');
+		setTimeout(function() {
+			initialize_dynamic(settings_receiver, monitor);
+		}, 20);
 	});
 }
 
