@@ -120,9 +120,16 @@ function modify(settings) {
 
 	remove_useless_notifications(settings);
 
+	// home page followers
 	$(".ProfileCardStats-statLink[data-element-term='follower_stats']").css("visibility", "visible");
+
+	// profile page followers
 	$(".ProfileNav-stat[data-nav='followers']").css("visibility", "visible");
+
+	// tweet stats
 	$(".ProfileTweet-actionCountForPresentation").css("visibility", "visible");
+
+	// selected tweet stats
 	$(".js-tweet-stats-container").attr("hsm-modified", "true");
 }
 

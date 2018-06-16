@@ -42,42 +42,44 @@ function initialize_static(settings_receiver) {
 	chrome.storage.sync.get(null, function(settings_map) {
 		var settings = new SettingsReader(settings_map);
 
-		console.time("settings_receiver_static");
 		settings_receiver(settings);
-		console.timeEnd("settings_receiver_static");
 	});
 }
 
 // initialize content script for a dynamic webpage
 function initialize_dynamic(settings_receiver, monitor=null, ms=50) {
 	initialize_static(function(settings) {
-		console.time("settings_receiver_init");
+		console.time("settings_receiver");
 		settings_receiver(settings);
-		console.timeEnd("settings_receiver_init");
+		console.timeEnd("settings_receiver");
 		bind_dynamic(settings_receiver, monitor, ms);
 	});
 }
 
-function unbind_dynamic(monitor=null) {
+function bind_dynamic(settings_receiver, monitor=null, ms=50) {
+	var observer = new MutationObserver(function(mutations) {
+		this.disconnect();
+
+		setTimeout(function() {
+			initialize_dynamic(settings_receiver, monitor, ms);
+		}, ms);
+	});
+
+	var config = { attributes: true, childList: true, characterData: true, subtree: true };
+
+	observer.observe(monitor == null ? document : monitor, config);
+}
+
+function unbind_dynamic_using_event(monitor=null) {
 	$(monitor == null ? document : monitor).unbind('DOMSubtreeModified.event1');
 }
 
 // swap this so it can't miss
-function bind_dynamic(settings_receiver, monitor=null, ms=50) {
+function bind_dynamic_using_event(settings_receiver, monitor=null, ms=50) {
 	$(monitor == null ? document : monitor).one('DOMSubtreeModified.event1', function() {
-
-		//$(this).unbind("DOMSubtreeModified.event1");
-		//console.log("Event=" + xinspect(event));
-		
-
-		// settings_receiver instantly, but take a while to rebind
-		//initialize_static(settings_receiver);
-
 		setTimeout(function() {
 			initialize_dynamic(settings_receiver, monitor, ms);
-			//bind_dynamic(settings_receiver, monitor, ms);
 		}, ms);
-
 	});
 }
 
