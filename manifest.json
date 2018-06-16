@@ -4,15 +4,18 @@
 	"description": "Reduce addictive and neurotic aspects of social media.",
 	"permissions": ["activeTab", "storage"],
 	"options_page": "options.html",
+	
     "content_scripts": [
 	   {
 	     "matches": ["*://*.reddit.com/*"],
 	     "js": ["settings_reader.js", "jquery-3.3.1.min.js", "sites/reddit.js"],
+	     "css": ["sites/reddit.css"],
 	     "run_at": "document_end"
 	   },
 	   {
 	   	 "matches": ["*://*.twitter.com/*"],
-	     "js": ["settings_reader.js", "jquery-3.3.1.min.js", "sites/twitter.js"]
+	     "js": ["settings_reader.js", "jquery-3.3.1.min.js", "sites/twitter.js"],
+	     "css": ["sites/twitter.css"]
 	   },
 	   {
 	   	 "matches": ["*://*.facebook.com/*"],

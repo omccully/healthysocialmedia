@@ -2,6 +2,7 @@
   <html>
     <head>
     <script src="jquery-3.3.1.min.js"></script>
+    <script src="settings_reader.js"></script>
     </head>
     <body>
       <h2>General</h2>
@@ -66,6 +67,10 @@
 	  <label for="twitter_hide_follow_notifications">Hide follow notifications</label>
 	  
       <h2>YouTube</h2>
+      <input id="youtube_speedmod_enabled" type="checkbox" default-checked/>
+    <label for="youtube_speedmod_enabled">Remember playback speed based on channel and video category</label>
+    <br/>
+    <span id="youtube_speedmod_info"></span>
       <input id="youtube_hide_video_stats" type="checkbox" default-checked/>
 	  <label for="youtube_hide_video_stats">Hide your video stats</label>
 	  

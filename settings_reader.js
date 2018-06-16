@@ -38,20 +38,23 @@ class SettingsReader {
 	}
 }
 
-// initialize content script for a dynamic webpage
-function initialize_dynamic(settings_receiver, monitor=null) {
+function initialize_static(settings_receiver) {
 	chrome.storage.sync.get(null, function(settings_map) {
 		var settings = new SettingsReader(settings_map);
-		settings_receiver(settings);
 
-		$(monitor == null ? document : monitor).bind('DOMSubtreeModified.event1', function() {
-			// 
-			// temporarily remove handler to prevent infinite recursion
-			$(this).unbind('DOMSubtreeModified.event1');
-    		setTimeout(function() {
-    			initialize_dynamic(settings_receiver, monitor);
-    		}, 20);
-		});
+		console.time("settings_receiver_static");
+		settings_receiver(settings);
+		console.timeEnd("settings_receiver_static");
+	});
+}
+
+// initialize content script for a dynamic webpage
+function initialize_dynamic(settings_receiver, monitor=null, ms=50) {
+	initialize_static(function(settings) {
+		console.time("settings_receiver_init");
+		settings_receiver(settings);
+		console.timeEnd("settings_receiver_init");
+		bind_dynamic(settings_receiver, monitor, ms);
 	});
 }
 
@@ -59,21 +62,26 @@ function unbind_dynamic(monitor=null) {
 	$(monitor == null ? document : monitor).unbind('DOMSubtreeModified.event1');
 }
 
-function bind_dynamic(settings_receiver, monitor=null) {
-	$(monitor == null ? document : monitor).bind('DOMSubtreeModified.event1', function() {
-		$(this).unbind('DOMSubtreeModified.event1');
+// swap this so it can't miss
+function bind_dynamic(settings_receiver, monitor=null, ms=50) {
+	$(monitor == null ? document : monitor).one('DOMSubtreeModified.event1', function() {
+
+		//$(this).unbind("DOMSubtreeModified.event1");
+		//console.log("Event=" + xinspect(event));
+		
+
+		// settings_receiver instantly, but take a while to rebind
+		//initialize_static(settings_receiver);
+
 		setTimeout(function() {
-			initialize_dynamic(settings_receiver, monitor);
-		}, 20);
+			initialize_dynamic(settings_receiver, monitor, ms);
+			//bind_dynamic(settings_receiver, monitor, ms);
+		}, ms);
+
 	});
 }
 
-function initialize_static(settings_receiver) {
-	chrome.storage.sync.get(null, function(settings_map) {
-		var settings = new SettingsReader(settings_map);
-		settings_receiver(settings);
-	});
-}
+
 
 // not my code, taken from stackoverflow
 function xinspect(o,i){

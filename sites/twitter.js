@@ -11,21 +11,45 @@ function remove_tweet_stats(username, settings) {
 		'twitter_hide_tweet_comments': "button.js-actionReply"
 	};
 	var selector_appendix = " .ProfileTweet-actionCountForPresentation";
+
+	var replacement = settings.replacement;
 	
-	$(".content").each(function(i, tweet) {
-		var poster = $(tweet).find(".username b").text();
+	$(".tweet").each(function() {
+		var poster = $(this).attr("data-screen-name"); //$(tweet).find(".username b").text();
 
 		if(username == poster) {
-			$(tweet).find(".ProfileTweet-actionCountForPresentation").html("HSM");
+			//$(tweet).find(".ProfileTweet-actionCountForPresentation").html("HSM");
 
 			for(var key in setting2selector) {
 				if(setting2selector.hasOwnProperty(key)) {
 					if(settings.get(key)) {
-						$(setting2selector[key] + selector_appendix).hide(); //.html("hid favorite");
+						var ele = $(this).find(setting2selector[key] + selector_appendix);
+						ele.html(replacement);
+						if(!replacement) ele.hide();
 					}
 				}
 			}
+
+			var hide_retweets = settings.get("twitter_hide_tweet_retweet");
+			var hide_likes = settings.get("twitter_hide_tweet_likes");
+			
+			if(hide_retweets) $(this).find(".js-stat-retweets").hide();
+			if(hide_likes) $(this).find(".js-stat-favorites").hide();
+			
+			if(hide_retweets && hide_likes) {
+				// if both hidden, remove the whole damn row
+				$(".js-tweet-stats-container").hide();
+			} else if(hide_retweets || hide_likes) {
+				// if either hidden, remove avatars
+				$(this).find(".avatar-row").css("visibility", "hidden");
+			}
 		}
+	});
+}
+
+function remove_tweet_stats_selected(username, settings) {
+	$(".tweet").each(function() {
+
 	});
 }
 
@@ -95,7 +119,13 @@ function modify(settings) {
 	remove_statcard_followers(replacement, twitter_followers_allow_hover);
 
 	remove_useless_notifications(settings);
+
+	$(".ProfileCardStats-statLink[data-element-term='follower_stats']").css("visibility", "visible");
+	$(".ProfileNav-stat[data-nav='followers']").css("visibility", "visible");
+	$(".ProfileTweet-actionCountForPresentation").css("visibility", "visible");
+	$(".js-tweet-stats-container").attr("hsm-modified", "true");
 }
+
 
 /*
 $.ajax({

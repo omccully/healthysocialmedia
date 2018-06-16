@@ -1,3 +1,8 @@
+// firefox
+// "options_ui": { "page": "options.html" },
+
+// chrome
+// "options_page": "options.html",
 
 function get_or_default(obj, key, default_value=undefined) {
   if(!obj.hasOwnProperty(key)) {
@@ -105,9 +110,30 @@ function onclick_restore_defaults() {
   }
 }
 
+function speed_list(obj) {
+  return Object.entries(obj).filter(arr => arr[1] != "Normal")
+    .map(arr => arr[0] + ": " + arr[1] + "x")
+    .join("<br/>");
+}
+
 function initialize_settings(settings) {
   initialize_all_checkboxes(settings);
   initialize_all_radios(settings);
+
+  settings_reader = new SettingsReader(settings);
+  var channel_speeds = settings_reader.get("youtube_channel_speeds", {});
+  var category_speeds = settings_reader.get("youtube_category_speeds", {});
+
+  var html = "";
+  if(Object.keys(channel_speeds).length) {
+    html = "Channels:<br/>" + speed_list(channel_speeds) + "<br/><br/>";
+  }
+  if(Object.keys(category_speeds).length) {
+    //if(html.length > 0) html += "<br/><br/>";
+    html += "Categories:<br/>" + speed_list(category_speeds) + "<br/><br/>";
+  }
+  
+  $("#youtube_speedmod_info").html(html);
 
   $("#restore_defaults_button").click(onclick_restore_defaults);
 }

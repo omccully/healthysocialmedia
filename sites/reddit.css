@@ -1,0 +1,44 @@
+.user .userkarma {
+	display: none;
+}
+
+.Post__prominentComment > div:first-child:not([modified]) {
+	display: none;
+}
+
+.Post__score {
+	display: none;
+}
+
+.Comment__header .Comment__metadata {
+
+	display: none;
+}
+
+.score:not([modified]) {
+	display: none;
+}
+
+.views {
+	display: none;
+}
+
+.link .likes div.score.likes:not([modified]) {
+	display: none;
+}
+
+.link .dislikes div.score.dislikes:not([modified]) {
+	display: none;
+}
+
+.Post__flatList .Post__flatListItem:first-of-type {
+	display: none;
+}
+
+.BlueBar__karma {
+	display: none;
+}
+
+.ProfileSidebar__karma {
+	display: none;
+}

@@ -1,0 +1,15 @@
+.ProfileCardStats-statLink[data-element-term='follower_stats'] {
+	visibility: hidden;
+}
+
+.ProfileNav-stat[data-nav='followers'] {
+	visibility: hidden;
+}
+
+.ProfileTweet-actionCountForPresentation {
+	visibility: hidden;
+}
+
+.js-tweet-stats-container:not([hsm-modified='true']) {
+	display: none!important;
+}
