@@ -6,7 +6,7 @@ class YouTubeIdentity {
 		this.display_name = get_latest_channel_name(settings);
 		this.user_name = get_latest_channel_user(settings, this.id);
 
-		//console.log("chid = " + this.id + ", cname = " + this.display_name + ", cuser = " + this.user_name);
+		console.log("chid = " + this.id + ", cname = " + this.display_name + ", cuser = " + this.user_name);
 	}
 
 	equals_url(url) {
@@ -46,19 +46,24 @@ function get_latest_channel_id(settings) {
 	// prefer DOM, static value, then storage
 	var chid_cache_key = 'cache_youtube_channel_id';
 
+	var stored_chid = settings.get(chid_cache_key);
+
 	var channel_id = get_channel_id_from_dom();
 	if(channel_id != null) {
-		chrome.storage.sync.set({[chid_cache_key]: channel_id}, function() {
-			//console.log("Stored " + chid_cache_key + " = " + channel_id);
-		});
+		if(stored_chid != channel_id) {
+			chrome.storage.sync.set({[chid_cache_key]: channel_id}, function() {
+				//console.log("Stored " + chid_cache_key + " = " + channel_id);
+			});
+		}
+		
 		get_latest_channel_id.latest_channel_id = channel_id;
 		return channel_id;
 	} else if(get_latest_channel_id.latest_channel_id != undefined) {
 		return get_latest_channel_id.latest_channel_id;
 	} 
-	var chid = settings.get(chid_cache_key);
-	get_latest_channel_id.latest_channel_id = chid;
-	return chid;
+	
+	get_latest_channel_id.latest_channel_id = stored_chid;
+	return stored_chid;
 }
 
 function get_channel_name_from_dom() {
@@ -68,25 +73,29 @@ function get_channel_name_from_dom() {
 
 function get_latest_channel_name(settings) {
 	var name_cache_key = 'cache_youtube_channel_name';
-
+	var stored_cname = settings.get(name_cache_key);
 	var channel_name = get_channel_name_from_dom();
 	if(channel_name != null) {
-		chrome.storage.sync.set({[name_cache_key]: channel_name}, function() {
-			//console.log("Stored " + name_cache_key + " = " + channel_name);
-		});
+		if(stored_cname != channel_name) {
+			chrome.storage.sync.set({[name_cache_key]: channel_name}, function() {
+				//console.log("Stored " + name_cache_key + " = " + channel_name);
+			});
+		}
+		
 		get_latest_channel_name.latest_channel_name = channel_name;
 		return channel_name;
 	} else if(get_latest_channel_name.latest_channel_name != undefined) {
 		return get_latest_channel_name.latest_channel_name;
 	} 
-	var cname = settings.get(name_cache_key);
-	get_latest_channel_name.latest_channel_name = cname;
-	return cname;
+	
+	get_latest_channel_name.latest_channel_name = stored_cname;
+	return stored_cname;
 }
 
 function get_channel_user_from_dom(channel_id) {
 	if(is_channel_page_by_chid(channel_id)) {
 		var action = $("form#form.style-scope.ytd-expandable-tab-renderer").attr("action");
+		if(!action) return null;
 
 		var match = action.match(new RegExp("user\/(.+)\/"));
 		if(match != null) {
@@ -99,19 +108,23 @@ function get_channel_user_from_dom(channel_id) {
 
 function get_latest_channel_user(settings, channel_id) {
 	var user_cache_key = 'cache_youtube_channel_user';
+	var stored_cuser = settings.get(user_cache_key);
 	var channel_user = get_channel_user_from_dom(channel_id);
 	if(channel_user != null) {
-		chrome.storage.sync.set({[user_cache_key]: channel_user}, function() {
-			//console.log("Stored " + user_cache_key + " = " + channel_user);
-		});
+		if(stored_cuser != channel_user) {
+			chrome.storage.sync.set({[user_cache_key]: channel_user}, function() {
+				//console.log("Stored " + user_cache_key + " = " + channel_user);
+			});
+		}
+		
 		get_latest_channel_user.latest_channel_user = channel_user;
 		return channel_user;
 	} else if(get_latest_channel_user.latest_channel_user != undefined) {
 		return get_latest_channel_user.latest_channel_user;
 	} 
-	var cuser = settings.get(user_cache_key);
-	get_latest_channel_user.latest_channel_user = cuser;
-	return cuser;
+	
+	get_latest_channel_user.latest_channel_user = stored_cuser;
+	return stored_cuser;
 }
 
 
@@ -147,12 +160,40 @@ function video_uploader() {
 }
 
 function hide_video_stats(replacement) {
-	console.log("replacement = " + replacement);
+	console.log("hide_video_stats(" + replacement);
 	// view count
+	
 	$(".view-count").html(replacement);
 
+	var like_button_replacement = replacement == "" ? "" : "X";
+	$("yt-formatted-string.ytd-toggle-button-renderer").html(like_button_replacement);
+
+	/*$(".view-count").each(function() {
+		console.log("hide_video_stats.view-count = " + $(this).html());
+		if($(this).html() != replacement) {
+			$(this).attr("saved_text", $(this).html());
+		}
+		$(this).html(replacement);
+	});
+
+
 	// like button
-	$("yt-formatted-string.ytd-toggle-button-renderer").html(replacement == "" ? "" : "X");
+	
+	$("yt-formatted-string.ytd-toggle-button-renderer").each(function() {
+		var html = $(this).html();
+		if(like_button_replacement && html.includes(like_button_replacement) 
+			&& html.length > like_button_replacement.length) {
+			// some sort of bug when you load new video after
+			// viewing your own video that makes the like/dislike counts like:
+			// X17K and X207
+			// remove the X and save the text
+			var save_txt = html.replace(like_button_replacement, "");
+			$(this).attr("saved_text", save_txt);
+		} else if(html && html != like_button_replacement) {
+			$(this).attr("saved_text", html);
+		}
+		$(this).html(like_button_replacement);
+	});*/
 
 	// hide like bar
 	$("#like-bar").hide();
@@ -167,6 +208,47 @@ function hide_video_stats(replacement) {
 			ele.html("Many Comments");
 		}
 	}
+}
+
+function show_video_stats(replacement) {
+	console.log("show_video_stats(" + replacement);
+	var like_button_replacement = replacement == "" ? "" : "X";
+
+	$(".view-count").each(function() {
+		console.log("show_video_stats.view-count = " + $(this).html());
+		if($(this).html() == replacement) {
+			var saved_txt = $(this).attr("saved_text");
+			if(saved_txt) {
+				$(this).html(saved_txt);
+				$(this).removeAttr("saved_text");
+			} else {
+				var svc = $(this).sublings(".short-view-count").html();
+				console.log("taking view count from sibling: " + svc);
+				if(svc) $(this).html(svc);
+			}
+		} 
+
+		/*else if(like_button_replacement && $(this).html().includes(like_button_replacement)) {
+			$(this).html($(this).html().replace(like_button_replacement, ""));
+		}*/
+	});
+
+	$("yt-formatted-string.ytd-toggle-button-renderer").each(function() {
+		var html = $(this).html();
+		if(like_button_replacement && html.includes(like_button_replacement) 
+			&& html.length > like_button_replacement.length) {
+			var new_txt = html.replace(like_button_replacement, "");
+			console.log(html + " -> " + new_txt);
+			$(this).html(new_txt);
+		} else {
+			var save_txt = $(this).attr("saved_text");
+			if(save_txt) $(this).html(save_txt);
+			console.log("restoring from save_txt: " + save_txt);
+		}
+		$(this).removeAttr("saved_text");
+	});
+
+	$("#like-bar").show();
 }
 
 function mark_vids_seen(seen_vids) {
@@ -269,7 +351,7 @@ function get_speed_passive() {
 }
 
 function get_speed() {
-	var started_opened = $(".ytp-settings-menu").css("display") == "none";
+	var started_opened = $(".ytp-settings-menu").css("display") != "none";
 	if(!started_opened) $(".ytp-settings-button").click();
 	
 	var txt = get_speed_passive();
@@ -282,7 +364,7 @@ function get_speed() {
 function set_speed(speed) {
 	console.log("set_speed(" + speed);
 
-	var started_opened = $(".ytp-settings-menu").css("display") == "none";
+	var started_opened = $(".ytp-settings-menu").css("display") != "none";
 	if(!started_opened) $(".ytp-settings-button").click();
 
 	if(get_speed_passive_mainmenu() != speed) {
@@ -499,15 +581,10 @@ function video_category(callback, passive_only=false) {
 		return;
 	}
 
-	//$(document).unbind('DOMSubtreeModified.event1');
-
-	// this shit is fucked and needs fix. related to rebind_dynamic
-	//return;
-
-
 	var more_but = $(".more-button");
 	if(more_but.length) {
 		$(".more-button").first().click();
+		// it takes 10 ms for the description to open, so just call the func again for the result
 	}
 
 	console.log("end:");
@@ -527,28 +604,34 @@ function get_video_time_sec() {
 }
 
 function modify_watch_page(settings) {
-	var href = window.location.href;
-	//console.log(xinspect(window["ytInitialData"]));
 	var identity = new YouTubeIdentity(settings);
 	var replacement = settings.replacement;
 
-	//console.log("vudeo_title = " + video_title());
-	//console.log("watch page");
-
-	// need to hook up listeners for specific things for watch page
-	// when new URL detected
-
 	if(identity.id) { // we know SOME info about the user at least
-		//console.log("using channel_id = " + channel_id);
-
 		if(settings.get('youtube_hide_video_stats') && is_my_video_watch_page(identity)) {
+			console.log("is my watch page");
 			hide_video_stats(replacement);
+			modify_watch_page.hid_video_stats = true;
+		} else if(modify_watch_page.hid_video_stats) {
+			// if the user navigates to their own video then to another person's video,
+			// we have to refresh the page completely. 
+			// YouTube uses some sort of element recycling
+			location.reload();
+			modify_watch_page.hid_video_stats = false;
+
+			return;
 		}
 
 		hide_comments(identity, replacement);
 	} 
 
+	if(settings.get("youtube_speedmod_enabled", true)) {
+		modify_speed(settings);
+	}
+}
 
+function modify_speed(settings) {
+	var href = window.location.href;
 	var uploader = video_uploader();
 	if(!uploader) {
 		console.log("no uploader");
@@ -560,85 +643,90 @@ function modify_watch_page(settings) {
 		return;
 	}
 
-	//console.log("uploader = " + uploader);
+	if($(".ytp-live-badge:visible").length != 0) {
+		console.log("is live");
+		return;
+	}
 
-	if(settings.get("youtube_speedmod_enabled", true) && $(".ytp-live-badge:visible").length == 0) {
-		// when modify_watch_page.last_href_speedchange != href, set last_timesec to get_video_sec_time()
-		// when last_sectime != -1 && get_video_sec_time() != last_sectime
-		// when all is said and done, se last_sectime = -1
-		//console.log("vidTimesec = " + get_video_time_sec());
-		//modify_watch_page.last_timesec = -1;
+	var channel_speeds = settings.get("youtube_channel_speeds", {});
+	var category_speeds = settings.get("youtube_category_speeds", {});
 
-		//console.log("speedmod");
+	// modify_watch_page.speedchange_init_href is set when a new href is seen
+	// modify_watch_page.speedchange_finished_href is set when speed change process finished
+	function is_new_href(href) {
+		return modify_watch_page.speedchange_init_href != href;
+	}
+
+	function is_speed_change_finished(href) {
+		return modify_watch_page.speedchange_finished_href == href;
+	}
+
+	if(is_new_href(href) && $(".ytp-settings-menu").length) {
+		modify_watch_page.speedchange_init_href = href;
+
+		video_category(function(cat) {
+			// open description
+			console.log("newurlCategory = " + cat);
+		});
+	} else if(!is_speed_change_finished(href)) {
+		if(uploader && channel_speeds.hasOwnProperty(uploader)) {
+			console.log("Uploader = " + uploader);
+			set_speed(channel_speeds[uploader]);
+			modify_watch_page.speedchange_finished_href = href;
+		} else {
+			video_category(function(cat) {
+				console.log("Category = " + cat);
+				if(cat) {
+					if(category_speeds.hasOwnProperty(cat)) {
+						set_speed(category_speeds[cat]);
+					}
+					modify_watch_page.speedchange_finished_href = href;
+				}
+			});
+		}
+	}
+
+	// only save vid speeds when set_speed already happened
+	if(is_speed_change_finished(href)) {
+		// when settings menu is opened, we can get the current speed
+		try_save_current_video_speed(settings);
+	}
+	
+}
+
+function try_save_current_video_speed(settings) {
+	var href = window.location.href;
+	var speed_passive = get_speed_passive();
+	if(speed_passive && 
+		(try_save_current_video_speed.prev_speed_passive != speed_passive || 
+			try_save_current_video_speed.prev_href != href)) {
+
+		try_save_current_video_speed.prev_speed_passive = speed_passive;
+		try_save_current_video_speed.prev_href = href;
 
 		var channel_speeds = settings.get("youtube_channel_speeds", {});
 		var category_speeds = settings.get("youtube_category_speeds", {});
 
-		
-		if(modify_watch_page.last_href_speedchange != href && $(".ytp-settings-menu").length) {
-			console.log("New watch url detected");
-			modify_watch_page.last_timesec = get_video_time_sec();
-			console.log("modify_watch_page.last_timesec = " + modify_watch_page.last_timesec);
-			modify_watch_page.last_href_speedchange = href;
-		} else {
-			var vts = get_video_time_sec();
 
-			if(modify_watch_page.last_timesec != -1 &&
-				vts > 0 && vts != modify_watch_page.last_timesec) {
-				//var uploader = video_uploader();
-				console.log("uploader = " + uploader);
-				if(uploader && channel_speeds.hasOwnProperty(uploader)) {
-					set_speed(channel_speeds[uploader]);
-					modify_watch_page.last_timesec = -1;
-				} else {
-					video_category(function(cat) {
-						console.log("Category = " + cat);
-						// when the url changes, try getting the speed until you're able
-						// then set the speed if needed
-						// when the time changes, that's when u do the shit.
-
-						if(cat) {
-							if(category_speeds.hasOwnProperty(cat)) {
-								set_speed(category_speeds[cat]);
-							}
-							modify_watch_page.last_timesec = -1;
-						}
-					});
-				}
-			}
-		}
-
-
-
-		// when settings menu is opened, we can get the current speed
-		// speed_passive= gets entered sometimes...
-		var speed_passive = get_speed_passive();
-		if(speed_passive && 
-			(modify_watch_page.prev_speed_passive != speed_passive || modify_watch_page.prev_href != href)) {
-
-			modify_watch_page.prev_speed_passive = speed_passive;
-			modify_watch_page.prev_href = href;
-
-			console.log("speed_passive = " + speed_passive);
-			// this part is slow for the first time only it's not async properly
-			video_category(function(cat) {
-				if(cat &&
-					(!category_speeds.hasOwnProperty(cat) || category_speeds[cat] != speed_passive)) {
-					category_speeds[cat] = speed_passive;
-					chrome.storage.sync.set({"youtube_category_speeds": category_speeds}, function() {
-						console.log("youtube_category_speeds = " + xinspect(category_speeds));
-					});
-				}
-			});
-
-			
-			if(uploader &&
-				(!channel_speeds.hasOwnProperty(uploader) || channel_speeds[uploader] != speed_passive)) {
-				channel_speeds[uploader] = speed_passive;
-				chrome.storage.sync.set({"youtube_channel_speeds": channel_speeds}, function() {
-					console.log("youtube_channel_speeds = " + xinspect(channel_speeds));
+		console.log("speed_passive = " + speed_passive);
+		// this part is slow for the first time only it's not async properly
+		video_category(function(cat) {
+			if(cat &&
+				(!category_speeds.hasOwnProperty(cat) || category_speeds[cat] != speed_passive)) {
+				category_speeds[cat] = speed_passive;
+				chrome.storage.sync.set({"youtube_category_speeds": category_speeds}, function() {
+					console.log("youtube_category_speeds = " + xinspect(category_speeds));
 				});
 			}
+		});
+
+		var uploader = video_uploader();
+		if(uploader &&
+			(!channel_speeds.hasOwnProperty(uploader) || channel_speeds[uploader] != speed_passive)) {
+			channel_speeds[uploader] = speed_passive;
+			chrome.storage.sync.set({"youtube_channel_speeds": channel_speeds}, function() {
+				console.log("youtube_channel_speeds = " + xinspect(channel_speeds));
+			});
 		}
 	}
 }
@@ -672,10 +760,14 @@ function modify(settings) {
 	} else if(is_channel_page(identity)) {
 		modify_channel_page(settings);
 	}
+
+	$("yt-formatted-string.ytd-toggle-button-renderer").css("visibility", "visible");
+	$(".view-count").css("visibility", "visible");
+	$("#like-bar").css("visibility", "visible");
 }
 
 
 
-initialize_dynamic(modify, document, 333); // 300 ms
+initialize_dynamic(modify, document, 150);
 
 

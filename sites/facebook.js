@@ -23,36 +23,42 @@ function hide_friend_counts(replacement) {
 	$("._3d0").html(replacement);
 }
 
-function modify(settings) {
+function is_my_profile() {
 	var account_id = logged_in_account_id();
-
 	console.log("account_id = " + account_id);
-	var replacement = settings.replacement;
-
 	var reg = new RegExp('facebook\.com/' + account_id);
-	var match = reg.test(window.location.href);
-	if(match) {
-		console.log("on home profile");
+	return reg.test(window.location.href);
+}
 
-		switch(settings.get("facebook_comment_reactions")) {
-			case "nochange":
+function modify_profile(settings) {
+	console.log("on home profile");
 
-				break;
-			case "nometrics":
-				var others_reg = new RegExp("[0-9]+ others");
-				$("._4arz").each(function(i, liketext) {
-					$(liketext).html($(liketext).html().replace(others_reg, "some others"));
-				});
-				break;
-			case "removeentirely": 
-				$("._3t53").hide();
-				break;
-		}
+	switch(settings.get("facebook_comment_reactions")) {
+		case "nochange":
 
-		if(settings.get("facebook_hide_friend_counts")) {
-			hide_friend_counts(replacement);
-		}
+			break;
+		case "nometrics":
+			var others_reg = new RegExp("[0-9]+ others");
+			$("._4arz").each(function(i, liketext) {
+				$(liketext).html($(liketext).html().replace(others_reg, "some others"));
+			});
+			break;
+		case "removeentirely": 
+			$("._3t53").hide();
+			break;
 	}
+
+	if(settings.get("facebook_hide_friend_counts")) {
+		hide_friend_counts(settings.replacement);
+	}
+}
+
+function modify(settings) {
+	if(is_my_profile()) {
+		modify_profile(settings);
+	}
+
+	$("._gs6, ._2iem, ._3d0").css("visibility", "visible");
 }
 
 initialize_dynamic(modify);

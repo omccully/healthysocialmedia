@@ -2,12 +2,12 @@
 	display: none;
 }
 
-.Post__prominentComment > div:first-child:not([modified]) {
-	display: none;
+.Post__prominentComment > div:first-child {
+	visibility: hidden;
 }
 
 .Post__score {
-	display: none;
+	visibility: hidden;
 }
 
 .Comment__header .Comment__metadata {
@@ -15,14 +15,24 @@
 	display: none;
 }
 
-.score:not([modified]) {
+/*.score:not([modified]) {
 	display: none;
+}
+*/
+/*
+.tagline.score {
+	visibility: hidden;
+}*/
+.score {
+	visibility: hidden;
+	
 }
 
 .views {
 	display: none;
 }
 
+/*
 .link .likes div.score.likes:not([modified]) {
 	display: none;
 }
@@ -30,6 +40,8 @@
 .link .dislikes div.score.dislikes:not([modified]) {
 	display: none;
 }
+*/
+
 
 .Post__flatList .Post__flatListItem:first-of-type {
 	display: none;

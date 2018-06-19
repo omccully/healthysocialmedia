@@ -9,8 +9,7 @@
 	   {
 	     "matches": ["*://*.reddit.com/*"],
 	     "js": ["settings_reader.js", "jquery-3.3.1.min.js", "sites/reddit.js"],
-	     "css": ["sites/reddit.css"],
-	     "run_at": "document_end"
+	     "css": ["sites/reddit.css"]
 	   },
 	   {
 	   	 "matches": ["*://*.twitter.com/*"],
@@ -19,11 +18,13 @@
 	   },
 	   {
 	   	 "matches": ["*://*.facebook.com/*"],
-	     "js": ["settings_reader.js", "jquery-3.3.1.min.js", "sites/facebook.js"]
+	     "js": ["settings_reader.js", "jquery-3.3.1.min.js", "sites/facebook.js"],
+	     "css": ["sites/facebook.css"]
 	   },
 	   {
 	   	 "matches": ["*://*.youtube.com/*"],
-	     "js": ["settings_reader.js", "jquery-3.3.1.min.js", "sites/youtube.js"]
+	     "js": ["settings_reader.js", "jquery-3.3.1.min.js", "sites/youtube.js"],
+	     "css": ["sites/youtube.css"]
 	   }
 	],
 

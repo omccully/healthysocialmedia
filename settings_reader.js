@@ -49,25 +49,30 @@ function initialize_static(settings_receiver) {
 // initialize content script for a dynamic webpage
 function initialize_dynamic(settings_receiver, monitor=null, ms=50) {
 	initialize_static(function(settings) {
-		console.time("settings_receiver");
+		//console.time("settings_receiver");
+		//console.log("calling settings_receiver from initialize_dynamic");
 		settings_receiver(settings);
-		console.timeEnd("settings_receiver");
+		//console.timeEnd("settings_receiver");
+		//console.log("calling bind_dynamic...");
 		bind_dynamic(settings_receiver, monitor, ms);
 	});
 }
 
 function bind_dynamic(settings_receiver, monitor=null, ms=50) {
 	var observer = new MutationObserver(function(mutations) {
+		//console.log("mutated-observed");
 		this.disconnect();
 
 		setTimeout(function() {
+			//console.log("setTimeout");
 			initialize_dynamic(settings_receiver, monitor, ms);
 		}, ms);
 	});
 
 	var config = { attributes: true, childList: true, characterData: true, subtree: true };
 
-	observer.observe(monitor == null ? document : monitor, config);
+	observer.observe(document.body /*monitor == null ? document : monitor*/, config);
+	//console.log("observer observing...");
 }
 
 function unbind_dynamic_using_event(monitor=null) {

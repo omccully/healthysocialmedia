@@ -46,10 +46,10 @@ function hide_post_comment_counts(username) {
 
 function hide_profile_page_overview_scores(username, replacement, allow_hover) {
 	// remove scores from comments on overview
-	$(".Post__prominentComment > div:first-of-type:not([modified])").each(function() {
+	// :not([modified])
+	$(".Post__prominentComment > div:first-of-type").each(function() {
+		//$(this).attr("modified", "true");
 		if($(this).find(".Post__username").text() == username) {
-			$(this).attr("modified", "true");
-
 			var new_html = $(this).html().replace(new RegExp('[\-0-9]+ point[s]*'), 
 				(allow_hover ? "<span title=\"$&\">" + replacement + "</span>" : replacement)
 			);
@@ -171,6 +171,21 @@ function shade_link(jquery, opacity) {
 	}
 }
 
+function is_channel_page_by_chid(channel_id) {
+	if(!channel_id) return false;
+	return window.location.href.includes("channel/" + channel_id);
+}
+
+
+function is_profile(username) {
+	if(!username) return false;
+	return window.location.href.toLowerCase().includes("user/" + username.toLowerCase());
+}
+
+function is_comments_page() {
+	return window.location.href.match(new RegExp('r\/[A-Za-z_-]+\/comments'));
+}
+
 function modify(settings) {
 	var replacement = "HSM";
 	if(get_or_default(settings, "general_leave_no_trace", false)) {
@@ -210,20 +225,21 @@ function modify(settings) {
 		}
 
 		var unseen_urls_on_this_page = new Set();
+		if(!is_comments_page()) {
+			$(".link").each(function() {
+				var permalink = $(this).attr("data-permalink");
+				if(modify.seen_links.has(permalink)) {
+					// shade 
+					shade_link($(this), opacity);
+				} else {
+					unseen_urls_on_this_page.add(permalink);
+				}
 
-		$(".link").each(function() {
-			var permalink = $(this).attr("data-permalink");
-			if(modify.seen_links.has(permalink)) {
-				// shade 
-				shade_link($(this), opacity);
-			} else {
-				unseen_urls_on_this_page.add(permalink);
-			}
-
-			//$(this).css("opacity", "0.36");
-		});
-
+				//$(this).css("opacity", "0.36");
+			});
+		}
 		modify.unseen = unseen_urls_on_this_page;
+		
 
 		if($(".nav-buttons").find("#mark_links_seen").length == 0) {
 			$(".nav-buttons")
@@ -292,26 +308,32 @@ function modify(settings) {
 
 		hide_bluebar_karma(replacement);
 		
-		hide_profile_page_overview_scores(username, replacement, allow_hover);
-		hide_profile_page_comment_scores(username, replacement, allow_hover);
-		hide_profile_page_post_scores(username, replacement, allow_hover);
+		if(is_profile(username)) {
+			hide_profile_page_overview_scores(username, replacement, allow_hover);
+			hide_profile_page_comment_scores(username, replacement, allow_hover);
+			hide_profile_page_post_scores(username, replacement, allow_hover);
 
-		remove_profile_karma(replacement);
+			remove_profile_karma(replacement);
+		}
+
+		
 
 		$(".BlueBar__karma").css("display", "inline");
 	}
 
 	// make this the modified elements appear
 
+	$(".Post__prominentComment > div:first-of-type").css("visibility", "visible");
+
 	// profile page posts
-	$(".Post__score").css("display", "block");
+	$(".Post__score").css("visibility", "visible");
 
 	// 
 	$(".Comment__header .Comment__metadata").css("display", "inline-block");
 	//$(".score").css("display", "inline");
 
 	// post scores in many contexts
-	$(".score").attr("modified", "true");
+	$(".score").attr("modified", "true").css("visibility", "visible");
 
 	// views in sidebar of your post
 	$(".views").css("display", "inline");

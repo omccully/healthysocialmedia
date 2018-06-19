@@ -13,3 +13,12 @@
 .js-tweet-stats-container:not([hsm-modified='true']) {
 	display: none!important;
 }
+
+.global-nav .people.notifications .count.new-count {
+	display: none;
+}
+
+/* make 2nd new-count visible */
+/*.count ~ .new-count {
+	display: block;
+}*/
