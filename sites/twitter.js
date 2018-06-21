@@ -91,7 +91,7 @@ function hidden_notification_selector(settings) {
 			}
 		}
 	}
-	if(selectors.length) return ".gfjadgsdgjo";
+	if(selectors.length == 0) return ".gfjadgsdgjo";
 	return selectors.join(", ");
 }
 
@@ -100,6 +100,8 @@ function remove_useless_notifications(settings) {
 		if(UselessNotificationSelectors.hasOwnProperty(key)) {
 			if(settings.get(key)) {
 				$(UselessNotificationSelectors[key]).hide(); 
+			} else {
+				$(UselessNotificationSelectors[key]).show(); 
 			}
 		}
 	}
@@ -126,9 +128,9 @@ function modify_notification_icon(settings) {
 			$(".js-activity:not(" + hidden_notification_selector(settings) + ")")
 				.slice(0, stored_notification_count).addClass("highlighted");
 			
-
 			chrome.storage.sync.set({ "twitter_notification_count": 0 });
 			settings.set_val("twitter_notification_count", 0);
+			$("li.notifications #hsm-ncount").css("display", "none").removeClass("new-count");
 		}
 	} else {
 		if(stored_notification_count > 0) {
@@ -175,22 +177,30 @@ function modify_notification_icon(settings) {
 }
 
 function modify(settings) {
-	var username = logged_in_user();
+	if(settings.get("twitter_enable")) {
+		var username = logged_in_user();
 
-	console.log("username = " + username);
+		console.log("username = " + username);
 
-	var replacement = settings.replacement;
-	var twitter_followers_allow_hover = settings.twitter_followers_allow_hover;
+		var replacement = settings.replacement;
+		var followers_allow_hover = settings.twitter_followers_allow_hover;
+		var modify_followers = settings.twitter_modify_followers;
 
-	remove_tweet_stats(username, settings);
-	remove_profile_followers(username, replacement, twitter_followers_allow_hover);
-	remove_statcard_followers(replacement, twitter_followers_allow_hover);
+		remove_tweet_stats(username, settings);
 
-	remove_useless_notifications(settings);
+		if(modify_followers) {
+			remove_profile_followers(username, replacement, followers_allow_hover);
+			remove_statcard_followers(replacement, followers_allow_hover);
+		}
+		
+		remove_useless_notifications(settings);
 
-
-	modify_notification_icon(settings);
-
+		if(settings.get("twitter_exclude_hidden_notifications")) 
+		{
+			modify_notification_icon(settings);
+		}
+	}
+	
 	// home page followers
 	$(".ProfileCardStats-statLink[data-element-term='follower_stats']:not([hsm-hidden='true'])")
 		.css("visibility", "visible");

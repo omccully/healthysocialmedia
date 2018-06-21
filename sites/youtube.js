@@ -751,14 +751,16 @@ function modify_channel_page(settings) {
 function modify(settings) {
 	console.log("modify--------------");
 	
-	var identity = new YouTubeIdentity(settings);
+	if(settings.get("youtube_enable")) {
+		var identity = new YouTubeIdentity(settings);
 	
-	if(is_subscriptions_page()) {
-		modify_subscriptions_page(settings);
-	} else if(is_watch_page()) {
-		modify_watch_page(settings)
-	} else if(is_channel_page(identity)) {
-		modify_channel_page(settings);
+		if(is_subscriptions_page()) {
+			modify_subscriptions_page(settings);
+		} else if(is_watch_page()) {
+			modify_watch_page(settings)
+		} else if(is_channel_page(identity)) {
+			modify_channel_page(settings);
+		}
 	}
 
 	$("yt-formatted-string.ytd-toggle-button-renderer").css("visibility", "visible");

@@ -127,7 +127,8 @@ function remove_postinfo(replacement) {
 	//$(".flat-list .first a.comments").html("comments");
 }
 
-function remove_profile_karma(replacement) {
+function remove_profile_karma(replacement, allow_hover) {
+	if(allow_hover) $(".ProfileSidebar__karma").attr("title", $(".ProfileSidebar__karma").html());
 	$(".ProfileSidebar__karma").html(replacement);
 }
 
@@ -139,14 +140,18 @@ function get_or_default(obj, key, default_value=undefined) {
 }
 
 
-function hide_bluebar_karma(replacement) {
+function hide_bluebar_karma(replacement, allow_hover) {
 	if(replacement != "") {
 		replacement = "(" + replacement + ")";
 	}
+
+	if(allow_hover) $(".BlueBar__karma").attr("title", 
+		$(".BlueBar__karma").html().replace("(", "").replace(")", ""));
+
 	$(".BlueBar__karma").html(replacement);
 }
 
-function hide_userspan_karma(replacement) {
+function hide_userspan_karma(replacement, allow_hover) {
 	if(replacement == "") {
 		//$(".user").remove(":not(a)");
 		var user_link = $(".user a").first().clone();
@@ -156,7 +161,10 @@ function hide_userspan_karma(replacement) {
 		//$(".user").find("span").remove();
 		//$(".user").html($(".user").html().replace(new RegExp('(&nbsp;)|\(|\)'), ""));
 	} else {
-		$(".user").find(".userkarma").html(replacement).css("display", "inline");
+		var karma_ele = $(".user").find(".userkarma");
+		if(allow_hover) karma_ele.attr("title", karma_ele.html());
+
+		karma_ele.html(replacement).css("display", "inline");
 	}
 }
 
@@ -186,143 +194,150 @@ function is_comments_page() {
 	return window.location.href.match(new RegExp('r\/[A-Za-z_-]+\/comments'));
 }
 
+function modify_seen_posts(settings) {
+
+	modify_seen_posts.seen_links = new Set(settings.get("reddit_seen_links", []));
+	modify_seen_posts.latest_settings = settings;
+
+	var hide_seen_links = settings.get("reddit_hide_seen_links", false);
+
+	var opacity = "0.36"; 
+	if(hide_seen_links) {
+		opacity = "0.0"; // hide() videos
+	}
+
+	var unseen_urls_on_this_page = new Set();
+	if(!is_comments_page()) {
+		$(".link").each(function() {
+			var permalink = $(this).attr("data-permalink");
+			if(modify_seen_posts.seen_links.has(permalink)) {
+				// shade 
+				shade_link($(this), opacity);
+			} else {
+				unseen_urls_on_this_page.add(permalink);
+			}
+
+			//$(this).css("opacity", "0.36");
+		});
+	}
+	modify_seen_posts.unseen = unseen_urls_on_this_page;
+	
+
+	if($(".nav-buttons").find("#mark_links_seen").length == 0) {
+		$(".nav-buttons")
+			.append(
+				$("<input />")
+					.attr("id", "mark_links_seen")
+					.attr("value", "Mark all as seen")
+					.attr("type", "button")
+					.css("margin-left", "15px")
+					.click(function() {
+						modify_seen_posts.unseen.forEach(function(val) {
+							modify_seen_posts.seen_links.add(val);
+						});
+
+						chrome.storage.sync.set({
+							"reddit_seen_links": Array.from(modify_seen_posts.seen_links)
+						});
+
+						shade_link($(".link"), opacity);
+					})
+			).append(
+				$("<input />")
+					.attr("id", "mark_links_unseen")
+					.attr("value", "Mark all as unseen")
+					.attr("type", "button")
+					.css("margin-left", "15px")
+					.click(function() {
+						modify_seen_posts.seen_links.clear();
+
+						chrome.storage.sync.set({"reddit_seen_links": []});
+
+						shade_link($(".link"), "");
+					})
+			).append(
+				$("<input />")
+					.attr("id", "hide_seen_links")
+					.attr("type", "checkbox")
+					.prop("checked", hide_seen_links)
+					.css("margin-left", "15px")
+					.css("vertical-align", "middle")
+					.change(function() {
+						
+						var checked = $(this).prop("checked");
+						console.log("checked = " + checked);
+						chrome.storage.sync.set({"reddit_hide_seen_links": checked});
+
+						// use this static value because "settings" could be old
+						modify.latest_settings.set_val("reddit_hide_seen_links", checked);
+						modify(modify.latest_settings);
+					})
+			).append(
+				$("<label></label>")
+					.attr("for", "hide_seen_links")
+					.html("Hide seen links")
+			);
+	}
+}
+
 function modify(settings) {
-	var replacement = "HSM";
-	if(get_or_default(settings, "general_leave_no_trace", false)) {
-		console.log("no trace");
-		replacement = "";
-	} else {
-		console.log("replacement = " + replacement);
-	}
+	if(settings.get("reddit_enable")) {
+		var replacement = settings.replacement;
 
-	var reddit_upvotes = get_or_default(settings, "reddit_upvotes", "removeentirely");
-	var allow_hover = reddit_upvotes != "removeentirely";
-	console.log("allow_hover = " + allow_hover);
+		//var reddit_upvotes = get_or_default(settings, "reddit_upvotes", "removeentirely");
+		var upvotes_allow_hover = settings.reddit_upvotes_allow_hover;
+		var modify_upvotes = settings.reddit_modify_upvotes;
+		console.log("upvotes_allow_hover = " + upvotes_allow_hover);
 
-	var user_spans = $(".user");
-	if(user_spans.length == 1) {
-		var logged_in_user = user_span_to_username(user_spans.first());
-
-		hide_userspan_karma(replacement);
-
-		var count = hide_post_scores_from_user(logged_in_user, replacement, allow_hover);
-		console.log("hide_post_scores_from_user count = " + count);
-		if(count > 0) {
-			remove_postinfo(replacement);
-		} 
-
-		hide_comment_scores_from_user(logged_in_user, replacement, allow_hover);
+		var karma_allow_hover = settings.reddit_karma_allow_hover;
+		var modify_karma = settings.reddit_modify_karma;
 
 
-		modify.seen_links = new Set(settings.get("reddit_seen_links", []));
-		modify.latest_settings = settings;
+		var user_spans = $(".user");
+		if(user_spans.length == 1) {
+			var logged_in_user = user_span_to_username(user_spans.first());
 
-		var hide_seen_links = settings.get("reddit_hide_seen_links", false);
+			if(modify_karma) hide_userspan_karma(replacement, karma_allow_hover);
 
-		var opacity = "0.36"; 
-		if(hide_seen_links) {
-			opacity = "0.0"; // hide() videos
+			if(modify_upvotes) {
+				var count = hide_post_scores_from_user(logged_in_user, replacement, upvotes_allow_hover);
+				console.log("hide_post_scores_from_user count = " + count);
+				if(count > 0) {
+					remove_postinfo(replacement);
+				} 
+
+				hide_comment_scores_from_user(logged_in_user, replacement, upvotes_allow_hover);
+			}
+			
+			modify_seen_posts(settings);
+
+			//top bar
+			$(".user .userkarma").css("display", "inline");
 		}
 
-		var unseen_urls_on_this_page = new Set();
-		if(!is_comments_page()) {
-			$(".link").each(function() {
-				var permalink = $(this).attr("data-permalink");
-				if(modify.seen_links.has(permalink)) {
-					// shade 
-					shade_link($(this), opacity);
-				} else {
-					unseen_urls_on_this_page.add(permalink);
+		var bluebars = $(".BlueBar__username");
+		if(bluebars.length == 1) {
+			var username = bluebars.first().html();
+			console.log("bluebar username = " + username);
+
+			if(modify_karma) hide_bluebar_karma(replacement, karma_allow_hover);
+			
+			if(is_profile(username)) {
+				if(modify_upvotes) {
+					hide_profile_page_overview_scores(username, replacement, upvotes_allow_hover);
+					hide_profile_page_comment_scores(username, replacement, upvotes_allow_hover);
+					hide_profile_page_post_scores(username, replacement, upvotes_allow_hover);
 				}
+				
+				if(modify_karma) remove_profile_karma(replacement, karma_allow_hover);
+			}
 
-				//$(this).css("opacity", "0.36");
-			});
+			$(".BlueBar__karma").css("display", "inline");
 		}
-		modify.unseen = unseen_urls_on_this_page;
-		
-
-		if($(".nav-buttons").find("#mark_links_seen").length == 0) {
-			$(".nav-buttons")
-				.append(
-					$("<input />")
-						.attr("id", "mark_links_seen")
-						.attr("value", "Mark all as seen")
-						.attr("type", "button")
-						.css("margin-left", "15px")
-						.click(function() {
-							modify.unseen.forEach(function(val) {
-								modify.seen_links.add(val);
-							});
-
-							chrome.storage.sync.set({
-								"reddit_seen_links": Array.from(modify.seen_links)
-							});
-
-							shade_link($(".link"), opacity);
-						})
-				).append(
-					$("<input />")
-						.attr("id", "mark_links_unseen")
-						.attr("value", "Mark all as unseen")
-						.attr("type", "button")
-						.css("margin-left", "15px")
-						.click(function() {
-							modify.seen_links.clear();
-
-							chrome.storage.sync.set({"reddit_seen_links": []});
-
-							shade_link($(".link"), "");
-						})
-				).append(
-					$("<input />")
-						.attr("id", "hide_seen_links")
-						.attr("type", "checkbox")
-						.prop("checked", hide_seen_links)
-						.css("margin-left", "15px")
-						.css("vertical-align", "middle")
-						.change(function() {
-							
-							var checked = $(this).prop("checked");
-							console.log("checked = " + checked);
-							chrome.storage.sync.set({"reddit_hide_seen_links": checked});
-
-							// use this static value because "settings" could be old
-							modify.latest_settings.set_val("reddit_hide_seen_links", checked);
-							modify(modify.latest_settings);
-						})
-				).append(
-					$("<label></label>")
-						.attr("for", "hide_seen_links")
-						.html("Hide seen links")
-				);
-		}
-
-		//top bar
-		$(".user .userkarma").css("display", "inline");
 	}
+	
 
-	var bluebars = $(".BlueBar__username");
-	if(bluebars.length == 1) {
-		var username = bluebars.first().html();
-		console.log("bluebar username = " + username);
-
-		hide_bluebar_karma(replacement);
-		
-		if(is_profile(username)) {
-			hide_profile_page_overview_scores(username, replacement, allow_hover);
-			hide_profile_page_comment_scores(username, replacement, allow_hover);
-			hide_profile_page_post_scores(username, replacement, allow_hover);
-
-			remove_profile_karma(replacement);
-		}
-
-		
-
-		$(".BlueBar__karma").css("display", "inline");
-	}
-
-	// make this the modified elements appear
-
+	// top line of prominent comment on profile overview.
 	$(".Post__prominentComment > div:first-of-type").css("visibility", "visible");
 
 	// profile page posts

@@ -132,17 +132,32 @@ function initialize_settings(settings) {
     //if(html.length > 0) html += "<br/><br/>";
     html += "Categories:<br/>" + speed_list(category_speeds) + "<br/><br/>";
   }
-  
   $("#youtube_speedmod_info").html(html);
 
   $("#restore_defaults_button").click(onclick_restore_defaults);
+
+  $("#youtube_identity_info_guide").css("display", 
+    settings.cache_youtube_channel_id ? "none" : "block");
+  
+  $("#youtube_identity_info").html("chid = " + settings.cache_youtube_channel_id + 
+    ", cname = " + settings.cache_youtube_channel_name + 
+    ", cuser = " + settings.cache_youtube_channel_user);
 }
 
-chrome.storage.sync.get(null, function(settings) {
-  //console.log(xinspect(settings));
-  initialize_settings(settings);
-});
+function initialize() {
+  chrome.storage.sync.get(null, function(settings) {
+    console.log("initializing settings page");
+    //console.log(xinspect(settings));
+    initialize_settings(settings);
 
+    setTimeout(function() {
+      initialize();
+    }, 5000);
+  });
+}
+
+
+initialize();
 
 
 // GENERATE DEFAULTS:

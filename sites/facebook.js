@@ -54,7 +54,8 @@ function modify_profile(settings) {
 }
 
 function modify(settings) {
-	if(is_my_profile()) {
+
+	if(settings.get("facebook_enable") && is_my_profile()) {
 		modify_profile(settings);
 	}
 

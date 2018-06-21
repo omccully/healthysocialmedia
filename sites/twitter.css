@@ -18,7 +18,6 @@
 	display: none;
 }
 
-/* make 2nd new-count visible */
-/*.count ~ .new-count {
-	display: block;
-}*/
+li.js-activity-favorite, li.js-activity-retweet, li.js-activity-follow {
+	display: none;
+}
