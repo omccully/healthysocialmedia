@@ -17,7 +17,7 @@ function has_attr(attr) {
 
 // radio's name is settings key, value is value
 function radio_settings_setter(jquery) {
-  jquery.change(function() {
+  jquery.unbind().change(function() {
     if($(this).is(':checked')) {
       var val = $(this).val();
       var setting_key = $(this).attr('name');
@@ -58,7 +58,7 @@ function initialize_radiogroup(settings, group_name) {
 
 // checkbox's id is settings key
 function checkbox_settings_setter(jquery) {
-  jquery.change(function() {
+  jquery.unbind().change(function() {
     var id = $(this).attr('id');
     var set_obj = new Object();
     set_obj[id] = this.checked;
@@ -134,7 +134,7 @@ function initialize_settings(settings) {
   }
   $("#youtube_speedmod_info").html(html);
 
-  $("#restore_defaults_button").click(onclick_restore_defaults);
+  $("#restore_defaults_button").unbind().click(onclick_restore_defaults);
 
   $("#youtube_identity_info_guide").css("display", 
     settings.cache_youtube_channel_id ? "none" : "block");

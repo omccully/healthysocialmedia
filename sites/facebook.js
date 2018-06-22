@@ -44,7 +44,11 @@ function modify_profile(settings) {
 			});
 			break;
 		case "removeentirely": 
-			$("._3t53").hide();
+			if(settings.replacement == "") {
+				$("._3t53").hide();
+			} else {
+				$("._3t53").html(settings.replacement);
+			}
 			break;
 	}
 
@@ -54,7 +58,6 @@ function modify_profile(settings) {
 }
 
 function modify(settings) {
-
 	if(settings.get("facebook_enable") && is_my_profile()) {
 		modify_profile(settings);
 	}

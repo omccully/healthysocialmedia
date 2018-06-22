@@ -48,10 +48,11 @@ function hide_profile_page_overview_scores(username, replacement, allow_hover) {
 	// remove scores from comments on overview
 	// :not([modified])
 	$(".Post__prominentComment > div:first-of-type").each(function() {
-		//$(this).attr("modified", "true");
-		if($(this).find(".Post__username").text() == username) {
+		//$(this).attr("modified", "true");]
+		console.log("span hover already created = " + $(this).has("span#hoverpoints"));
+		if($(this).find(".Post__username").text() == username && !$(this).has("span#hoverpoints")) {
 			var new_html = $(this).html().replace(new RegExp('[\-0-9]+ point[s]*'), 
-				(allow_hover ? "<span title=\"$&\">" + replacement + "</span>" : replacement)
+				(allow_hover ? "<span id=\"hoverpoints\" title=\"$&\">" + replacement + "</span>" : replacement)
 			);
 			if(replacement == "") new_html = new_html.replace("•", "");
 
@@ -71,7 +72,11 @@ function hide_profile_page_comment_scores(username, replacement, allow_hover) {
 		if(author == username) {
 			var metadata = $(header).find(".Comment__metadata").first();
 			if(allow_hover) {
-				metadata.attr("title", metadata.text());
+				if(metadata.attr("hovered") != "true") {
+					metadata.attr("title", metadata.text());
+					metadata.attr("hovered", "true");
+				}
+				
 			}
 
 			metadata.html(metadata.html().replace(new RegExp('[\-0-9]+ point[s]*'), replacement));
@@ -97,7 +102,9 @@ function hide_profile_page_post_scores(username, replacement, allow_hover) {
 			var post_score = $(post).find(".Post__score");
 
 			if(allow_hover) {
-				post_score.attr("title", post_score.text());
+				if(post_score.text() != replacement) {
+					post_score.attr("title", post_score.text());
+				}
 			}
 
 			post_score.html(replacement);
@@ -128,7 +135,13 @@ function remove_postinfo(replacement) {
 }
 
 function remove_profile_karma(replacement, allow_hover) {
-	if(allow_hover) $(".ProfileSidebar__karma").attr("title", $(".ProfileSidebar__karma").html());
+	if(allow_hover) {
+		var html = $(".ProfileSidebar__karma").text();
+		if(html != replacement) {
+			// prevent replacing karma with the replacement on 2nd time through
+			$(".ProfileSidebar__karma").attr("title", html);
+		}
+	}
 	$(".ProfileSidebar__karma").html(replacement);
 }
 
@@ -145,8 +158,13 @@ function hide_bluebar_karma(replacement, allow_hover) {
 		replacement = "(" + replacement + ")";
 	}
 
-	if(allow_hover) $(".BlueBar__karma").attr("title", 
-		$(".BlueBar__karma").html().replace("(", "").replace(")", ""));
+	if(allow_hover) {
+		var html = $(".BlueBar__karma").text();
+		if(html != replacement) {
+			$(".BlueBar__karma").attr("title", 
+				html.replace("(", "").replace(")", "").replace(new RegExp('a([0-9])', "g"), "a; $1"));
+		}
+	}
 
 	$(".BlueBar__karma").html(replacement);
 }
@@ -162,7 +180,7 @@ function hide_userspan_karma(replacement, allow_hover) {
 		//$(".user").html($(".user").html().replace(new RegExp('(&nbsp;)|\(|\)'), ""));
 	} else {
 		var karma_ele = $(".user").find(".userkarma");
-		if(allow_hover) karma_ele.attr("title", karma_ele.html());
+		if(allow_hover && karma_ele.text() != replacement) karma_ele.attr("title", karma_ele.text());
 
 		karma_ele.html(replacement).css("display", "inline");
 	}
@@ -291,6 +309,7 @@ function modify(settings) {
 
 		var karma_allow_hover = settings.reddit_karma_allow_hover;
 		var modify_karma = settings.reddit_modify_karma;
+		console.log("karma_allow_hover = " + karma_allow_hover);
 
 
 		var user_spans = $(".user");
