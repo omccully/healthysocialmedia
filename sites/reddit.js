@@ -212,27 +212,37 @@ function is_comments_page() {
 	return window.location.href.match(new RegExp('r\/[A-Za-z_-]+\/comments'));
 }
 
-function modify_seen_posts(settings) {
+function permalink_to_link_id(permalink) {
+	var regex = new RegExp('\/r\/([A-Za-z0-9-_]+)\/comments\/([A-Za-z0-9]+)\/');
+	var match = permalink.match(regex);
+	if(!match) return null;
+	var subreddit = match[1];
+	var link_id = match[2];
+	return subreddit + "/" + link_id;
+}
 
+function modify_seen_posts(settings) {
+	modify_seen_posts.seen_links_old = new Set(settings.get("reddit_seen_links_old", []));
 	modify_seen_posts.seen_links = new Set(settings.get("reddit_seen_links", []));
+	console.log("seen_links_old size = " + modify_seen_posts.seen_links_old.size);
+	console.log("seen_links size = " + modify_seen_posts.seen_links.size);
 	modify_seen_posts.latest_settings = settings;
 
 	var hide_seen_links = settings.get("reddit_hide_seen_links", false);
 
-	var opacity = "0.36"; 
-	if(hide_seen_links) {
-		opacity = "0.0"; // hide() videos
-	}
+	var opacity = hide_seen_links ? "0.0" : "0.36"; 
 
 	var unseen_urls_on_this_page = new Set();
 	if(!is_comments_page()) {
 		$(".link").each(function() {
 			var permalink = $(this).attr("data-permalink");
-			if(modify_seen_posts.seen_links.has(permalink)) {
+			var link_id = permalink_to_link_id(permalink);
+
+			if(modify_seen_posts.seen_links.has(link_id) || modify_seen_posts.seen_links_old.has(link_id)) {
 				// shade 
 				shade_link($(this), opacity);
 			} else {
-				unseen_urls_on_this_page.add(permalink);
+				unseen_urls_on_this_page.add(link_id);
 			}
 
 			//$(this).css("opacity", "0.36");
@@ -254,8 +264,16 @@ function modify_seen_posts(settings) {
 							modify_seen_posts.seen_links.add(val);
 						});
 
-						chrome.storage.sync.set({
-							"reddit_seen_links": Array.from(modify_seen_posts.seen_links)
+						chrome.storage.sync.set({ "reddit_seen_links": Array.from(modify_seen_posts.seen_links) }, function() {
+							if(chrome.runtime.lastError) {
+								console.log("err= " + chrome.runtime.lastError);
+								console.log("reddit_seen_links full, pouring into old");
+								var new_old = modify_seen_posts.latest_settings.get("reddit_seen_links", []);
+								chrome.storage.sync.set({
+									"reddit_seen_links_old": new_old,
+									"reddit_seen_links": Array.from(modify_seen_posts.unseen) 
+								});
+							}
 						});
 
 						shade_link($(".link"), opacity);
@@ -268,8 +286,9 @@ function modify_seen_posts(settings) {
 					.css("margin-left", "15px")
 					.click(function() {
 						modify_seen_posts.seen_links.clear();
+						modify_seen_posts.seen_links_old.clear();
 
-						chrome.storage.sync.set({"reddit_seen_links": []});
+						chrome.storage.sync.set({"reddit_seen_links": [], "reddit_seen_links_old": []});
 
 						shade_link($(".link"), "");
 					})

@@ -65,7 +65,7 @@ function remove_profile_followers(username, replacement, allow_hover) {
 }
 
 function remove_statcard_followers(replacement, allow_hover) {
-	$(".ProfileCardStats-statLink[data-element-term='follower_stats']").each(function(i, stat) {
+	$("DashboardProfileCard .ProfileCardStats-statLink[data-element-term='follower_stats']").each(function(i, stat) {
 		if(replacement == "") {
 			$(stat).hide().attr("hsm-hidden", "true");
 		} else if(!allow_hover) {
@@ -76,10 +76,13 @@ function remove_statcard_followers(replacement, allow_hover) {
 	});
 }
 
+
+
 var UselessNotificationSelectors = {
 	'twitter_hide_like_notifications': "li.js-activity-favorite",
 	'twitter_hide_retweet_notifications': "li.js-activity-retweet",
-	'twitter_hide_follow_notifications': "li.js-activity-follow"
+	'twitter_hide_follow_notifications': "li.js-activity-follow",
+	'twitter_hide_likemention_notifications': "li.js-activity-favorited_mention"
 };
 
 function hidden_notification_selector(settings) {

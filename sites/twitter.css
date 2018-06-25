@@ -18,6 +18,6 @@
 	display: none;
 }
 
-li.js-activity-favorite, li.js-activity-retweet, li.js-activity-follow {
+li.js-activity-favorite, li.js-activity-retweet, li.js-activity-follow, li.js-activity-favorited_mention {
 	display: none;
 }

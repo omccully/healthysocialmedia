@@ -389,19 +389,17 @@ function video_title() {
 function modify_subscriptions_page(settings) {
 	var HideSeenVidsKey = "youtube_hide_seen_vids";
 	var SeenVideosKey = "youtube_seen_videos";
-
+	var SeenVideosOldKey = "youtube_seen_videos_old";
 	
 	console.log("subscription page");
 
+	modify_subscriptions_page.seen_videos_old = new Set(settings.get(SeenVideosOldKey))
 	modify_subscriptions_page.seen_videos = new Set(settings.get(SeenVideosKey, []));
 	modify_subscriptions_page.latest_settings = settings;
 	
 	var hide_seen_vids = settings.get(HideSeenVidsKey, false);
 
-	var opacity = "0.36"; 
-	if(hide_seen_vids) {
-		opacity = "0.0"; // hide() videos
-	}
+	var opacity = hide_seen_vids ? "0.0" : "0.36"; 
 
 	var unseen_urls_on_this_page = new Set();
 	// find first element after "today", then only search for elements in the same list
@@ -420,7 +418,7 @@ function modify_subscriptions_page(settings) {
 		if(href) {
 			var vid_id = video_url_to_id(href);
 			
-			if(modify_subscriptions_page.seen_videos.has(vid_id)) {
+			if(modify_subscriptions_page.seen_videos.has(vid_id) || modify_subscriptions_page.seen_videos_old.has(vid_id)) {
 				// if this video is already in seen_videos, shade it out
 				// shade
 				
@@ -462,6 +460,14 @@ function modify_subscriptions_page(settings) {
 
 				chrome.storage.sync.set({
 					[SeenVideosKey]: Array.from(modify_subscriptions_page.seen_videos)
+				}, function() {
+					if(chrome.runtime.lastError) {
+						var new_old = modify_seen_posts.latest_settings.get(SeenVideosKey, []);
+						chrome.storage.sync.set({
+							[SeenVideosOldKey]: new_old,
+							[SeenVideosKey]: Array.from(modify_subscriptions_page.unseen) 
+						});
+					}
 				});
 
 				//sub_vids_jquery().css("opacity", "0.5");
@@ -480,9 +486,10 @@ function modify_subscriptions_page(settings) {
 				// then save it to the SeenVideosKey
 
 				modify_subscriptions_page.seen_videos.clear();
+				modify_subscriptions_page.seen_videos_old.clear();
 
 				chrome.storage.sync.set({
-					[SeenVideosKey]: []
+					[SeenVideosKey]: [], [SeenVideosOldKey]: []
 				});
 
 				shade_videos(sub_vids_jquery(), "");
