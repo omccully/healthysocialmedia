@@ -65,7 +65,7 @@ function remove_profile_followers(username, replacement, allow_hover) {
 }
 
 function remove_statcard_followers(replacement, allow_hover) {
-	$("DashboardProfileCard .ProfileCardStats-statLink[data-element-term='follower_stats']").each(function(i, stat) {
+	$(".DashboardProfileCard .ProfileCardStats-statLink[data-element-term='follower_stats']").each(function(i, stat) {
 		if(replacement == "") {
 			$(stat).hide().attr("hsm-hidden", "true");
 		} else if(!allow_hover) {

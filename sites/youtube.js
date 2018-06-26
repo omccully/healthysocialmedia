@@ -671,10 +671,12 @@ function modify_speed(settings) {
 	if(is_new_href(href) && $(".ytp-settings-menu").length) {
 		modify_watch_page.speedchange_init_href = href;
 
-		video_category(function(cat) {
-			// open description
-			console.log("newurlCategory = " + cat);
-		});
+		if(!uploader || !channel_speeds.hasOwnProperty(uploader)) {
+			video_category(function(cat) {
+				// open description
+				console.log("newurlCategory = " + cat);
+			});
+		}
 	} else if(!is_speed_change_finished(href)) {
 		if(uploader && channel_speeds.hasOwnProperty(uploader)) {
 			console.log("Uploader = " + uploader);

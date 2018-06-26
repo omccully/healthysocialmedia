@@ -49,8 +49,9 @@ function hide_profile_page_overview_scores(username, replacement, allow_hover) {
 	// :not([modified])
 	$(".Post__prominentComment > div:first-of-type").each(function() {
 		//$(this).attr("modified", "true");]
-		console.log("span hover already created = " + $(this).has("span#hoverpoints"));
-		if($(this).find(".Post__username").text() == username && !$(this).has("span#hoverpoints")) {
+		var span_hover_created = $(this).find("span#hoverpoints").length != 0;
+		console.log("span hover already created = " + span_hover_created);
+		if($(this).find(".Post__username").text() == username && !span_hover_created) {
 			var new_html = $(this).html().replace(new RegExp('[\-0-9]+ point[s]*'), 
 				(allow_hover ? "<span id=\"hoverpoints\" title=\"$&\">" + replacement + "</span>" : replacement)
 			);
