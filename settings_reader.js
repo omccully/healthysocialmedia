@@ -3,19 +3,13 @@ class SettingsReader {
 		this.settings = settings;
 
 		// defaults generated from options.js
-		this.defaults = {"general_leave_no_trace":false,"facebook_enable":true,"facebook_hide_friend_counts":true,"reddit_enable":true,"twitter_enable":true,"twitter_hide_tweet_comments":false,"twitter_hide_tweet_retweet":true,"twitter_hide_tweet_likes":true,"twitter_hide_like_notifications":true,"twitter_hide_retweet_notifications":true,"twitter_hide_follow_notifications":true,"twitter_hide_likemention_notifications":true,"twitter_exclude_hidden_notifications":true,"youtube_enable":true,"youtube_speedmod_enabled":true,"youtube_hide_video_stats":true,"facebook_comment_reactions":"removeentirely","reddit_upvotes":"removeentirely","reddit_karma":"removeentirely","twitter_followers":"hover"};
+		this.defaults = {"general_leave_no_trace":true,"facebook_enable":true,"facebook_hide_friend_counts":true,"reddit_enable":true,"twitter_enable":true,"twitter_hide_tweet_comments":false,"twitter_hide_tweet_retweet":true,"twitter_hide_tweet_likes":true,"twitter_hide_like_notifications":true,"twitter_hide_retweet_notifications":true,"twitter_hide_follow_notifications":true,"twitter_hide_likemention_notifications":true,"twitter_exclude_hidden_notifications":true,"youtube_enable":true,"youtube_speedmod_enabled":true,"youtube_hide_video_stats":true,"facebook_comment_reactions":"removeentirely","reddit_upvotes":"removeentirely","reddit_karma":"removeentirely","twitter_followers":"hover"}
 	}
 
 	get(key, last_resort_value=undefined) {
-		if(!this.settings.hasOwnProperty(key)) {
-			if(this.defaults.hasOwnProperty(key)) {
-				//console.log(key + " == " + this.defaults[key] + " in defaults map");
-				return this.defaults[key];
-			}
-		    return last_resort_value;
-		}
-		//console.log(key + " == " + this.settings[key] + " in settings map");
-		return this.settings[key];
+		if(this.settings.hasOwnProperty(key)) return this.settings[key];
+		if(this.defaults.hasOwnProperty(key)) return this.defaults[key];
+		return last_resort_value;
 	}
 
 	set_val(key, value) {

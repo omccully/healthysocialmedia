@@ -1,16 +1,26 @@
-<!DOCTYPE html>
-<html>
-  <head>
-    <style>
-      button {
-        height: 30px;
-        width: 30px;
-        outline: none;
-      }
-    </style>
-  </head>
-  <body>
-    <button id="changeColor"></button>
-    <script src="popup.js"></script>
+ <!DOCTYPE html>
+  <html>
+    <head>
+	    <script src="jquery-3.3.1.min.js"></script>
+	    <script src="settings_reader.js"></script>
+	    <link rel="stylesheet" type="text/css" href="options.css">
+    <title>HSM Options</title>
+    </head>
+    <body>
+ 	<input id="facebook_enable" type="checkbox" default-checked/>
+	<label for="facebook_enable">Enable on Facebook</label>
+   	<br/>
+	<input id="reddit_enable" type="checkbox" default-checked/>
+	<label for="reddit_enable">Enable on Reddit</label>
+	<br/>
+    <input id="twitter_enable" type="checkbox" default-checked/>
+    <label for="twitter_enable">Enable on Twitter</label>
+	<br/>
+    <input id="youtube_enable" type="checkbox" default-checked/>
+    <label for="youtube_enable">Enable on YouTube</label>
+    <br/>
+    <br/>
+    <a href="/options.html">More options</a>
   </body>
+  <script src="options.js"></script>
 </html>

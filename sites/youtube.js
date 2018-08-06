@@ -6,7 +6,7 @@ class YouTubeIdentity {
 		this.display_name = get_latest_channel_name(settings);
 		this.user_name = get_latest_channel_user(settings, this.id);
 
-		console.log("chid = " + this.id + ", cname = " + this.display_name + ", cuser = " + this.user_name);
+		//console.log("chid = " + this.id + ", cname = " + this.display_name + ", cuser = " + this.user_name);
 	}
 
 	equals_url(url) {
@@ -361,10 +361,14 @@ function get_speed() {
 	return txt;
 }
 
+function is_settings_opened() {
+	return $(".ytp-settings-menu").css("display") != "none";
+}
+
 function set_speed(speed) {
 	console.log("set_speed(" + speed);
 
-	var started_opened = $(".ytp-settings-menu").css("display") != "none";
+	var started_opened = is_settings_opened();
 	if(!started_opened) $(".ytp-settings-button").click();
 
 	if(get_speed_passive_mainmenu() != speed) {
@@ -418,6 +422,10 @@ function modify_subscriptions_page(settings) {
 		if(href) {
 			var vid_id = video_url_to_id(href);
 			
+			// TODO: add a hover-over button for each sub vid
+			// to allow seen/unseen videos individually
+			// https://i.gyazo.com/5a774d20d3b0e1c48d9a4f594e158f26.png
+
 			if(modify_subscriptions_page.seen_videos.has(vid_id) || modify_subscriptions_page.seen_videos_old.has(vid_id)) {
 				// if this video is already in seen_videos, shade it out
 				// shade
@@ -431,6 +439,8 @@ function modify_subscriptions_page(settings) {
 					// this could be put in the if expression above, but then 
 					// the videos won't be shaded out instantly when they appear.
 					shade_video($(this), opacity, i);
+				} else {
+					shade_video($(this), "", i);
 				}
 
 				unseen_urls_on_this_page.add(vid_id);
@@ -547,6 +557,16 @@ function video_category_passive() {
 	return $("ytd-expander ytd-metadata-row-renderer:has(#title:contains('Category'))").find("a").text().trim();
 }
 
+function close_description() {
+	console.log("closing description");
+	$(".less-button").first().click();
+}
+
+function open_description() {
+	console.log("opening description");
+	$(".more-button").first().click();
+}
+
 function video_category(callback, passive_only=false) {
 	console.time("video_category");
 
@@ -568,8 +588,8 @@ function video_category(callback, passive_only=false) {
 	if(cat_ele.length) {
 		var cat = cat_ele.text().trim();
 		if(cat) {
-
-			$(".less-button").first().click();
+			// settings menu closes if it's opened
+			if(!is_settings_opened()) close_description();
 		}
 
 		if(vid_id && cat) video_category.cache[vid_id] = cat;
@@ -588,11 +608,8 @@ function video_category(callback, passive_only=false) {
 		return;
 	}
 
-	var more_but = $(".more-button");
-	if(more_but.length) {
-		$(".more-button").first().click();
-		// it takes 10 ms for the description to open, so just call the func again for the result
-	}
+	if(!is_settings_opened()) open_description();
+	// it takes 10 ms for the description to open, so just call the func again for the result
 
 	console.log("end:");
 	console.timeEnd("video_category");
@@ -632,12 +649,18 @@ function modify_watch_page(settings) {
 		hide_comments(identity, replacement);
 	} 
 
-	if(settings.get("youtube_speedmod_enabled", true)) {
+	if(settings.get("youtube_speedmod") != "none") { // settings.get("youtube_speedmod_enabled", true)
 		modify_speed(settings);
 	}
 }
 
+
+var DEFAULT_CATEGORY_SPEEDS = { 'Music': 'Normal' }
+
 function modify_speed(settings) {
+	var speedmod_setting = settings.get("youtube_speedmod", "categoryandchannel");
+	var speedmod_by_category = speedmod_setting == "categoryandchannel";
+
 	var href = window.location.href;
 	var uploader = video_uploader();
 	if(!uploader) {
@@ -656,7 +679,7 @@ function modify_speed(settings) {
 	}
 
 	var channel_speeds = settings.get("youtube_channel_speeds", {});
-	var category_speeds = settings.get("youtube_category_speeds", {});
+	var category_speeds = settings.get("youtube_category_speeds", DEFAULT_CATEGORY_SPEEDS);
 
 	// modify_watch_page.speedchange_init_href is set when a new href is seen
 	// modify_watch_page.speedchange_finished_href is set when speed change process finished
@@ -671,18 +694,24 @@ function modify_speed(settings) {
 	if(is_new_href(href) && $(".ytp-settings-menu").length) {
 		modify_watch_page.speedchange_init_href = href;
 
-		if(!uploader || !channel_speeds.hasOwnProperty(uploader)) {
+		//if(!uploader || !channel_speeds.hasOwnProperty(uploader)) {
+		if(speedmod_by_category) {
 			video_category(function(cat) {
 				// open description
 				console.log("newurlCategory = " + cat);
 			});
 		}
+			
+		//}
 	} else if(!is_speed_change_finished(href)) {
 		if(uploader && channel_speeds.hasOwnProperty(uploader)) {
 			console.log("Uploader = " + uploader);
 			set_speed(channel_speeds[uploader]);
 			modify_watch_page.speedchange_finished_href = href;
-		} else {
+
+			// close description in case it's open.
+			if(!is_settings_opened()) close_description();
+		} else if(speedmod_by_category) {
 			video_category(function(cat) {
 				console.log("Category = " + cat);
 				if(cat) {
@@ -690,6 +719,8 @@ function modify_speed(settings) {
 						set_speed(category_speeds[cat]);
 					}
 					modify_watch_page.speedchange_finished_href = href;
+
+					if(!is_settings_opened()) close_description();
 				}
 			});
 		}
@@ -704,6 +735,9 @@ function modify_speed(settings) {
 }
 
 function try_save_current_video_speed(settings) {
+	var speedmod_setting = settings.get("youtube_speedmod", "categoryandchannel");
+	var speedmod_by_category = speedmod_setting == "categoryandchannel";
+
 	var href = window.location.href;
 	var speed_passive = get_speed_passive();
 	if(speed_passive && 
@@ -714,27 +748,34 @@ function try_save_current_video_speed(settings) {
 		try_save_current_video_speed.prev_href = href;
 
 		var channel_speeds = settings.get("youtube_channel_speeds", {});
-		var category_speeds = settings.get("youtube_category_speeds", {});
+		var category_speeds = settings.get("youtube_category_speeds", DEFAULT_CATEGORY_SPEEDS);
 
 
 		console.log("speed_passive = " + speed_passive);
 		// this part is slow for the first time only it's not async properly
-		video_category(function(cat) {
-			if(cat &&
-				(!category_speeds.hasOwnProperty(cat) || category_speeds[cat] != speed_passive)) {
-				category_speeds[cat] = speed_passive;
-				chrome.storage.sync.set({"youtube_category_speeds": category_speeds}, function() {
-					console.log("youtube_category_speeds = " + xinspect(category_speeds));
-				});
-			}
-		});
+
+		if(speedmod_by_category) {
+			video_category(function(cat) {
+				if(cat &&
+					(!category_speeds.hasOwnProperty(cat) || category_speeds[cat] != speed_passive)) {
+					category_speeds[cat] = speed_passive;
+					chrome.storage.sync.set({"youtube_category_speeds": category_speeds}, function() {
+						console.log("youtube_category_speeds = " + xinspect(category_speeds));
+					});
+				}
+			});
+		}
 
 		var uploader = video_uploader();
 		if(uploader &&
 			(!channel_speeds.hasOwnProperty(uploader) || channel_speeds[uploader] != speed_passive)) {
 			channel_speeds[uploader] = speed_passive;
 			chrome.storage.sync.set({"youtube_channel_speeds": channel_speeds}, function() {
-				console.log("youtube_channel_speeds = " + xinspect(channel_speeds));
+				if(chrome.runtime.lastError) {
+					// youtube_channel_speeds is full, so 
+					chrome.storage.sync.set({"youtube_channel_speeds": {[uploader]: speed_passive} });
+				}
+				//console.log("youtube_channel_speeds = " + xinspect(channel_speeds));
 			});
 		}
 	}

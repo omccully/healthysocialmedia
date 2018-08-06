@@ -110,9 +110,9 @@ function onclick_restore_defaults() {
   }
 }
 
-function speed_list(obj) {
-  return Object.entries(obj).filter(arr => arr[1] != "Normal")
-    .map(arr => arr[0] + ": " + arr[1] + "x")
+function speed_list(obj, remove_normal = true) {
+  return Object.entries(obj).filter(arr => !remove_normal || arr[1] != "Normal")
+    .map(arr => arr[0] + ": " + arr[1] + (arr[1] != "Normal" ? "x" : ""))
     .join("<br/>");
 }
 
@@ -120,7 +120,7 @@ function initialize_settings(settings) {
   initialize_all_checkboxes(settings);
   initialize_all_radios(settings);
 
-  settings_reader = new SettingsReader(settings);
+  var settings_reader = new SettingsReader(settings);
   var channel_speeds = settings_reader.get("youtube_channel_speeds", {});
   var category_speeds = settings_reader.get("youtube_category_speeds", {});
 
@@ -130,7 +130,7 @@ function initialize_settings(settings) {
   }
   if(Object.keys(category_speeds).length) {
     //if(html.length > 0) html += "<br/><br/>";
-    html += "Categories:<br/>" + speed_list(category_speeds) + "<br/><br/>";
+    html += "Categories:<br/>" + speed_list(category_speeds, false) + "<br/><br/>";
   }
   $("#youtube_speedmod_info").html(html);
 

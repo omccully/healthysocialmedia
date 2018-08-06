@@ -76,7 +76,23 @@ function remove_statcard_followers(replacement, allow_hover) {
 	});
 }
 
+function warn_impostors() {
+	var original = $(".js-original-tweet").first();
+	if(original.length) {
+		var tag = original.attr("data-screen-name");
+		var display_name = original.attr("data-name");
 
+		$(".tweet").each(function() {
+			if($(this).attr("data-name") == display_name) {
+				if($(this).attr("data-screen-name") != tag) {
+					// impostor
+					$(this).css("opacity", "0.36");
+					$(this).find(".FullNameGroup strong.fullname").text("**impostor**");
+				}
+			}
+		});
+	}
+}
 
 var UselessNotificationSelectors = {
 	'twitter_hide_like_notifications': "li.js-activity-favorite",
@@ -202,6 +218,8 @@ function modify(settings) {
 		{
 			modify_notification_icon(settings);
 		}
+
+		warn_impostors();
 	}
 	
 	// home page followers

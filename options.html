@@ -1,14 +1,18 @@
  <!DOCTYPE html>
   <html>
     <head>
-    <script src="jquery-3.3.1.min.js"></script>
-    <script src="settings_reader.js"></script>
-    <title>HSM Options</title>
+        <script src="jquery-3.3.1.min.js"></script>
+        <script src="settings_reader.js"></script>
+        <link rel="stylesheet" type="text/css" href="options.css">
+        <title>HSM Options</title>
     </head>
     <body>
     <h2>General</h2>
-	  <input id="general_leave_no_trace" type="checkbox" default-checked/>
-	  <label for="general_leave_no_trace">Leave no trace of the removed content (may cause confusion if you forget the extension is installed)</label>
+    <div class="option">
+        <input id="general_leave_no_trace" type="checkbox" default-checked/>
+        <label for="general_leave_no_trace">Leave no trace of the removed content (may cause confusion if you forget the extension is installed)</label>
+    </div>
+	  
 	  
     <h2>Facebook</h2>
     <input id="facebook_enable" type="checkbox" default-checked/>
@@ -50,11 +54,6 @@
     &nbsp;
     <input type="radio" name="reddit_karma" id="rk_removeentirely" value="removeentirely" default-checked/>
     <label for="rk_removeentirely">Remove karma entirely</label>
-
-
-
-
-
 
 
 
@@ -103,13 +102,30 @@
     <input id="youtube_enable" type="checkbox" default-checked/>
     <label for="youtube_enable">Enable on YouTube</label>
     <br/><br/>
-    <input id="youtube_speedmod_enabled" type="checkbox" default-checked/>
-    <label for="youtube_speedmod_enabled">Remember playback speed based on channel and video category</label>
+
+
+    Remember playback speed:
+    <input type="radio" name="youtube_speedmod" id="ytsm_none" value="none" />
+    <label for="ytsm_none">None</label>
+    &nbsp;
+    <input type="radio" name="youtube_speedmod" id="ytsm_channel_only" value="channelonly"/>
+    <label for="ytsm_channel_only">based on channel only</label>
+    &nbsp;
+    <input type="radio" name="youtube_speedmod" id="ytsm_cat_and_channel" value="categoryandchannel" default-checked/>
+    <label for="ytsm_cat_and_channel">based on video category and channel</label>
+    <br/><br/>
+
+
+    <!--<input id="youtube_speedmod_enabled" type="checkbox" default-checked/>
+    <label for="youtube_speedmod_enabled">Remember playback speed</label>
     <br/>
+    <input id="youtube_speedmod_by_category" type="checkbox" default-checked/>
+    <label for="youtube_speedmod_by_category">Remember playback speed based on video category</label>
+    <br/>--> 
     <span id="youtube_speedmod_info"></span>
     <input id="youtube_hide_video_stats" type="checkbox" default-checked/>
 	  <label for="youtube_hide_video_stats">Hide your video stats</label>
-    <p id="youtube_identity_info_guide" style="display: none">In order for some of the YouTube features to work, the extension must first learn your YouTube account details. 
+    <p id="youtube_identity_info_guide" style="display: none; white-space: normal">In order for some of the YouTube features to work, the extension must first learn your YouTube account details. 
     To do this, go on YouTube and click the account icon on the top right of any page to open the drop-down menu.</p>
 	  <p id="youtube_identity_info"></p>
     <br/><br/>
