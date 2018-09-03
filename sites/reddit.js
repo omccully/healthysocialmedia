@@ -237,16 +237,18 @@ function modify_seen_posts(settings) {
 	if(!is_comments_page()) {
 		$(".link").each(function() {
 			var permalink = $(this).attr("data-permalink");
-			var link_id = permalink_to_link_id(permalink);
+			if(permalink) {
+				var link_id = permalink_to_link_id(permalink);
 
-			if(modify_seen_posts.seen_links.has(link_id) || modify_seen_posts.seen_links_old.has(link_id)) {
-				// shade 
-				shade_link($(this), opacity);
-			} else {
-				unseen_urls_on_this_page.add(link_id);
+				if(modify_seen_posts.seen_links.has(link_id) || modify_seen_posts.seen_links_old.has(link_id)) {
+					// shade 
+					shade_link($(this), opacity);
+				} else {
+					unseen_urls_on_this_page.add(link_id);
+				}
+
+				//$(this).css("opacity", "0.36");
 			}
-
-			//$(this).css("opacity", "0.36");
 		});
 	}
 	modify_seen_posts.unseen = unseen_urls_on_this_page;

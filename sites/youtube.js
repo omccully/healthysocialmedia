@@ -799,6 +799,11 @@ function modify_channel_page(settings) {
 // todo: make these static in modify()
 
 function modify(settings) {
+	// don't modify page when textarea is selected
+	// to avoid lag while typing
+	var active = document.activeElement;
+	if(active && active.tagName == 'textarea') return;	
+
 	console.log("modify--------------");
 	
 	if(settings.get("youtube_enable")) {
@@ -820,6 +825,6 @@ function modify(settings) {
 
 
 
-initialize_dynamic(modify, document, 150);
+initialize_dynamic(modify, document, 200);
 
 
