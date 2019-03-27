@@ -99,6 +99,28 @@ function initialize_all_radios(settings) {
   });
 }
 
+function initialize_all_selects(settings) {
+  $("select").each(function() {
+    var name = $(this).attr('name');
+
+    if(settings.hasOwnProperty(name)) {
+      $(this).val(settings[name]);
+    } else {
+      $(this).val($(this).find("[default-checked]").text());
+    }
+
+    $(this).unbind().change(function() {
+      var set_obj = new Object();
+      set_obj[name] = $(this).val();
+
+      console.log("Setting " + name + "=" + set_obj[name]);
+      chrome.storage.sync.set(set_obj, function() {
+        //console.log("Set");
+      });
+    });
+  });
+}
+
 function onclick_restore_defaults() {
   console.log("Restoring defaults");
   if(confirm("Are you sure you want to remove all of your custom settings " + 
@@ -119,6 +141,7 @@ function speed_list(obj, remove_normal = true) {
 function initialize_settings(settings) {
   initialize_all_checkboxes(settings);
   initialize_all_radios(settings);
+  initialize_all_selects(settings);
 
   var settings_reader = new SettingsReader(settings);
   var channel_speeds = settings_reader.get("youtube_channel_speeds", {});
@@ -173,5 +196,13 @@ $("input[type='radio'][default-checked]").each(function() {
   defaults[$(this).attr("name")] = $(this).attr("value");
 });
 
-console.log(JSON.stringify(defaults));
+$("select").each(function() {
+  var name = $(this).attr("name");
+  var defaultValue = $(this).find("option[default-checked]").text();
+  defaults[name] = defaultValue;
+});
+
+
+
+console.log(JSON.stringify(defaults, null, 2));
 */

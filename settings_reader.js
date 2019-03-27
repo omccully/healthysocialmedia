@@ -3,7 +3,29 @@ class SettingsReader {
 		this.settings = settings;
 
 		// defaults generated from options.js
-		this.defaults = {"general_leave_no_trace":true,"facebook_enable":true,"facebook_hide_friend_counts":true,"reddit_enable":true,"twitter_enable":true,"twitter_hide_tweet_comments":false,"twitter_hide_tweet_retweet":true,"twitter_hide_tweet_likes":true,"twitter_hide_like_notifications":true,"twitter_hide_retweet_notifications":true,"twitter_hide_follow_notifications":true,"twitter_hide_likemention_notifications":true,"twitter_exclude_hidden_notifications":true,"youtube_enable":true,"youtube_speedmod_enabled":true,"youtube_hide_video_stats":true,"facebook_comment_reactions":"removeentirely","reddit_upvotes":"removeentirely","reddit_karma":"removeentirely","twitter_followers":"hover"}
+		this.defaults = {
+			"facebook_comment_reactions": "removeentirely",
+			"facebook_enable": true,
+			"facebook_hide_friend_counts": true,
+			"general_leave_no_trace": true,
+			"reddit_enable": true,
+			"reddit_karma": "removeentirely",
+			"reddit_upvotes": "removeentirely",
+			"twitter_enable": true,
+			"twitter_exclude_hidden_notifications": true,
+			"twitter_followers": "hover",
+			"twitter_hide_follow_notifications": true,
+			"twitter_hide_like_notifications": true,
+			"twitter_hide_likemention_notifications": true,
+			"twitter_hide_retweet_notifications": true,
+			"twitter_hide_tweet_comments": false,
+			"twitter_hide_tweet_likes": true,
+			"twitter_hide_tweet_retweet": true,
+			"youtube_default_speed": "Normal",
+			"youtube_enable": true,
+			"youtube_hide_video_stats": true,
+			"youtube_speedmod": "categoryandchannel"
+		}
 	}
 
 	get(key, last_resort_value=undefined) {

@@ -640,6 +640,7 @@ function modify_watch_page(settings) {
 			// if the user navigates to their own video then to another person's video,
 			// we have to refresh the page completely. 
 			// YouTube uses some sort of element recycling
+			console.log("reloading page");
 			location.reload();
 			modify_watch_page.hid_video_stats = false;
 
@@ -678,6 +679,7 @@ function modify_speed(settings) {
 		return;
 	}
 
+	var default_speed = settings.get("youtube_default_speed", {});
 	var channel_speeds = settings.get("youtube_channel_speeds", {});
 	var category_speeds = settings.get("youtube_category_speeds", DEFAULT_CATEGORY_SPEEDS);
 
@@ -704,13 +706,22 @@ function modify_speed(settings) {
 			
 		//}
 	} else if(!is_speed_change_finished(href)) {
-		if(uploader && channel_speeds.hasOwnProperty(uploader)) {
-			console.log("Uploader = " + uploader);
-			set_speed(channel_speeds[uploader]);
+		if(uploader) {
+			if(channel_speeds.hasOwnProperty(uploader)) {
+				var uploader_speed = channel_speeds[uploader];
+				console.log("Setting speed using uploader (" + uploader + " = " + uploader_speed + ")");
+				set_speed(uploader_speed);
+			} else {
+				if(default_speed != "Normal") {
+					console.log("Setting speed using default (" + default_speed + ")");
+					set_speed(default_speed);
+				}
+			}
+			
 			modify_watch_page.speedchange_finished_href = href;
 
 			// close description in case it's open.
-			if(!is_settings_opened()) close_description();
+			// if(!is_settings_opened()) close_description();
 		} else if(speedmod_by_category) {
 			video_category(function(cat) {
 				console.log("Category = " + cat);
